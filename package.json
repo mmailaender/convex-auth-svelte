@@ -1,6 +1,6 @@
 {
-  "name": "@convex-dev/auth",
-  "version": "0.0.82",
+  "name": "@mmailaender/convex-svelte-auth",
+  "version": "0.0.1",
   "description": "Authentication for Convex",
   "keywords": [
     "authentication",
@@ -11,14 +11,13 @@
     "convex"
   ],
   "homepage": "https://labs.convex.dev/auth",
-  "bugs": "https://github.com/get-convex/convex-auth/issues",
-  "repository": "https://github.com/get-convex/convex-auth",
+  "bugs": "https://github.com/mmailaender/convex-svelte-auth/issues",
+  "repository": "https://github.com/mmailaender/convex-svelte-auth",
   "license": "Apache-2.0",
-  "author": "xixixao",
+  "author": "mmailaender",
   "files": [
     "dist",
     "providers",
-    "react",
     "server",
     "src"
   ],
@@ -28,11 +27,9 @@
   "scripts": {
     "build:bin": "esbuild src/cli/index.ts --bundle --platform=node --format=cjs --outfile=dist/bin.cjs",
     "build:server": "tsc --project tsconfig.server.json",
-    "build:react": "tsc --project tsconfig.react.json && mkdir -p dist && rm -rf dist/react && mv distreact/react dist/react && rm -r distreact",
-    "build:nextjs": "tsc --project tsconfig.nextjs.json && mkdir -p dist && rm -rf dist/nextjs && mv distnextjs/nextjs dist/nextjs && rm -r distnextjs",
     "build:svelte": "tsc --project tsconfig.svelte.json && mkdir -p dist && rm -rf dist/svelte && mv distsvelte/svelte dist/svelte && rm -r distsvelte",
     "build:sveltekit": "tsc --project tsconfig.sveltekit.json && mkdir -p dist && rm -rf dist/sveltekit && mv distsveltekit/sveltekit dist/sveltekit && rm -r distsveltekit",
-    "build": "rm -rf dist && npm run build:bin && npm run build:server && npm run build:react && npm run build:nextjs && npm run build:svelte && npm run build:sveltekit",
+    "build": "rm -rf dist && npm run build:bin && npm run build:server && npm run build:svelte && npm run build:sveltekit",
     "docs": "cd docs && npm run dev",
     "lint": "tsc && eslint . && cd test && npm run lint",
     "spellcheck": "cspell \"docs/pages/**/*.md*\"",
@@ -50,18 +47,6 @@
     "./providers/*": {
       "types": "./dist/providers/*.d.ts",
       "import": "./dist/providers/*.js"
-    },
-    "./react": {
-      "import": "./dist/react/index.js",
-      "require": "./dist/react/index.js"
-    },
-    "./nextjs": {
-      "import": "./dist/nextjs/index.js",
-      "require": "./dist/nextjs/index.js"
-    },
-    "./nextjs/server": {
-      "import": "./dist/nextjs/server/index.js",
-      "require": "./dist/nextjs/server/index.js"
     },
     "./svelte": {
       "import": "./dist/svelte/index.js",
@@ -90,13 +75,7 @@
   "peerDependencies": {
     "@auth/core": "^0.37.0",
     "convex": "^1.17.0",
-    "convex-svelte": "^0.0.11",
-    "react": "^18.2.0 || ^19.0.0-0"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    }
+    "convex-svelte": "^0.0.11"
   },
   "@comment devDependencies": [
     "The dependencies of the CLI are also in devDependencies, built into",
@@ -109,7 +88,6 @@
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@types/inquirer": "^9.0.7",
     "@types/node": "20.6.0",
-    "@types/react": "^18.3.12",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "chalk": "^5.3.0",
     "convex-test": "^0.0.20",
@@ -117,9 +95,7 @@
     "dotenv": "^16.4.5",
     "eslint": "8.49.0",
     "inquirer": "^9.2.22",
-    "next": "^15.3.1",
     "npm-run-all": "^4.1.5",
-    "react-dom": "^18.3.1",
     "shelljs": "^0.9.2",
     "svelte": "^5.28.2",
     "svelte-check": "^4.1.7",
