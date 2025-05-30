@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["esnext", "ESNext.Array", "dom", "dom.iterable"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "moduleResolution": "node",
+    "paths": {
+      "@convex-dev/auth/server": ["./src/server/index"],
+      "@convex-dev/auth/providers/*": ["./src/providers/*"],
+      "@convex-dev/auth/react": ["./src/react/index"],
+      "@convex-dev/auth/svelte": ["./src/svelte/index"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "*.mjs"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "docs",
+    "test",
+    "test-router",
+    "test-nextjs",
+    "test-svelte"
+  ]
+}
