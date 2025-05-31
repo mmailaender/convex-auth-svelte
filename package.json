@@ -46,10 +46,14 @@
 		}
 	},
 	"devDependencies": {
+		"@convex-dev/auth": "^0.0.86",
 		"@sveltejs/adapter-auto": "^6.0.0",
 		"@sveltejs/kit": "^2.21.1",
 		"@sveltejs/package": "^2.3.11",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"@types/node": "^22.15.29",
+		"convex": "^1.24.3",
+		"convex-svelte": "^0.0.11",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
 		"publint": "^0.3.12",
@@ -59,11 +63,21 @@
 		"vite": "^6.2.6"
 	},
 	"peerDependencies": {
-		"@sveltejs/kit": "^2.21.0"
+		"@auth/core": "^0.37.0",
+		"@convex-dev/auth": "^0.0.86",
+		"@sveltejs/kit": "^2.21.0",
+		"convex": "^1.24.3",
+		"convex-svelte": "^0.0.11"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
 			"esbuild"
 		]
+	},
+	"dependencies": {
+		"cookie": "^1.0.2",
+		"is-network-error": "^1.1.0",
+		"jwt-decode": "^4.0.0",
+		"path-to-regexp": "^8.2.0"
 	}
 }

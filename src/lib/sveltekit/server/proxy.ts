@@ -1,6 +1,5 @@
-import { RequestEvent } from "@sveltejs/kit";
+import type { RequestEvent } from "@sveltejs/kit";
 import { json } from "@sveltejs/kit";
-import { SignInAction } from "@convex-dev/auth/server";
 import { 
   AUTH_TOKEN_COOKIE, 
   AUTH_REFRESH_TOKEN_COOKIE, 
@@ -15,6 +14,9 @@ import {
   logVerbose, 
   setupClient 
 } from "./utils.js";
+
+// Types
+import type { SignInAction } from "@convex-dev/auth/server";
 
 export function shouldProxyAuthAction(event: RequestEvent, apiRoute: string) {
   // Handle both with and without trailing slash since this could be configured either way.

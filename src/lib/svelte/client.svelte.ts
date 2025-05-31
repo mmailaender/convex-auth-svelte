@@ -2,16 +2,18 @@
  * Svelte implementation of Convex Auth client.
  */
 import { getContext, setContext } from "svelte";
+import isNetworkError from "is-network-error";
+import { setupConvex } from "convex-svelte";
+import { ConvexClient, type ConvexClientOptions } from "convex/browser";
+
+// Types
 import type {
   SignInAction,
   SignOutAction,
-} from "../server/implementation/index.js";
-import { AuthClient } from "./clientType.js";
+} from "@convex-dev/auth/server";
+import type { AuthClient } from "./clientType.js";
 import type { ConvexAuthServerState, TokenStorage } from "./index.svelte.js";
-import isNetworkError from "is-network-error";
-import { Value } from "convex/values";
-import { setupConvex } from "convex-svelte";
-import { ConvexClient, ConvexClientOptions } from "convex/browser";
+import type { Value } from "convex/values";
 
 // Retry after this much time, based on the retry number.
 const RETRY_BACKOFF = [500, 2000]; // In ms
@@ -58,8 +60,11 @@ export function createAuthClient({
   // Debug logging
   const logVerbose = (message: string) => {
     if (options?.verbose) {
-      console.log(`${new Date().toISOString()} ${message}`);
-      client.logger?.logVerbose(message);
+      if (typeof client.logger === "object") {
+        client.logger.logVerbose(message);
+      } else {
+        console.log(`${new Date().toISOString()} ${message}`);
+      }
     }
   };
 

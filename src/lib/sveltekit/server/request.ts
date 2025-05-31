@@ -1,14 +1,16 @@
 import { jwtDecode } from "jwt-decode";
-import { SignInAction } from "../../server/implementation/index.js";
-import type { ConvexAuthHooksOptions } from "./index.js";
 import { isCorsRequest, logVerbose, setupClient } from "./utils.js";
-import { RequestEvent } from "@sveltejs/kit";
 import { 
   AUTH_TOKEN_COOKIE, 
   AUTH_REFRESH_TOKEN_COOKIE, 
   AUTH_VERIFIER_COOKIE,
   setAuthCookies
 } from "./cookies.js";
+
+// Types
+import type { SignInAction } from "@convex-dev/auth/server";
+import type { ConvexAuthHooksOptions } from "./index.js";
+import type { RequestEvent } from "@sveltejs/kit";
 
 export async function handleAuthenticationInRequest(
   event: RequestEvent,

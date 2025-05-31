@@ -2,7 +2,7 @@
  * Svelte client type definitions for Convex Auth.
  */
 
-import { FunctionReference, OptionalRestArgs } from "convex/server";
+import type { FunctionReference, OptionalRestArgs } from "convex/server";
 
 /**
  * Client implementation for authenticating with the Convex backend.
@@ -34,5 +34,5 @@ export interface AuthClient {
    */
   logger?: {
     logVerbose: (message: string) => void;
-  };
+  } | boolean;
 }

@@ -8,9 +8,9 @@ import {
   setConvexAuthContext,
   setupConvexClient,
 } from "../svelte/client.svelte.js";
-import { AuthClient } from "../svelte/clientType.js";
-import { ConvexClient, ConvexClientOptions } from "convex/browser";
-import { ConvexAuthServerState } from "../svelte/index.svelte.js";
+import type { AuthClient } from "../svelte/clientType.js";
+import { ConvexClient, type ConvexClientOptions } from "convex/browser";
+import type { ConvexAuthServerState } from "../svelte/index.svelte";
 import { logVerbose } from "./server/utils.js";
 
 /**

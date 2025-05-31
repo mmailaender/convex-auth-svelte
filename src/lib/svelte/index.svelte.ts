@@ -4,14 +4,14 @@
  * @module
  */
 
-import { ConvexClient, ConvexClientOptions } from "convex/browser";
+import { ConvexClient, type ConvexClientOptions } from "convex/browser";
 import {
   createAuthClient,
   setConvexAuthContext,
   getConvexAuthContext,
   setupConvexClient,
 } from "./client.svelte.js";
-import { AuthClient } from "./clientType.js";
+import type { AuthClient } from "./clientType.js";
 
 /**
  * Parameters for sign-in methods

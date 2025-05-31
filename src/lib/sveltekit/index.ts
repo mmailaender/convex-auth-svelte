@@ -11,7 +11,7 @@ import {
   type ConvexAuthServerState 
 } from "../svelte/index.svelte.js";
 
-import { ConvexClient, ConvexClientOptions } from "convex/browser";
+import { ConvexClient, type ConvexClientOptions } from "convex/browser";
 import { createSvelteKitAuthClient } from "./client.svelte.js";
 
 /**
