@@ -1,31 +1,21 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "lib": ["esnext", "ESNext.Array", "dom", "dom.iterable"],
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "dist",
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "moduleResolution": "node",
-    "paths": {
-      "@convex-dev/auth/server": ["./src/server/index"],
-      "@convex-dev/auth/providers/*": ["./src/providers/*"],
-      "@convex-dev/auth/svelte": ["./src/svelte/index"]
-    }
-  },
-  "include": ["**/*.ts", "**/*.tsx", "*.mjs"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "docs",
-    "test",
-    "test-router",
-    "test-nextjs",
-    "test-svelte"
-  ]
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"declaration": true,
+		"declarationMap": true,
+		"moduleResolution": "bundler"
+	}
+	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
+	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
+	//
+	// If you want to overwrite includes/excludes, make sure to copy over the relevant includes/excludes
+	// from the referenced tsconfig.json - TypeScript does not merge them in
 }

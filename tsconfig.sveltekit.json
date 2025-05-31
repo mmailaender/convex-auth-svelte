@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "outDir": "./distsveltekit",
-    "rootDir": "./src"
-  },
-  "include": ["src/sveltekit/**/*"]
-}

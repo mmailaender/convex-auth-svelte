@@ -1,108 +1,69 @@
 {
-  "name": "@mmailaender/convex-svelte-auth",
-  "version": "0.0.1",
-  "description": "Authentication for Convex",
-  "keywords": [
-    "authentication",
-    "authorization",
-    "auth",
-    "login",
-    "sign",
-    "convex"
-  ],
-  "homepage": "https://labs.convex.dev/auth",
-  "bugs": "https://github.com/mmailaender/convex-svelte-auth/issues",
-  "repository": "https://github.com/mmailaender/convex-svelte-auth",
-  "license": "Apache-2.0",
-  "author": "mmailaender",
-  "files": [
-    "dist",
-    "providers",
-    "server",
-    "src"
-  ],
-  "type": "module",
-  "bin": "./dist/bin.cjs",
-  "sideEffects": false,
-  "scripts": {
-    "build:bin": "esbuild src/cli/index.ts --bundle --platform=node --format=cjs --outfile=dist/bin.cjs",
-    "build:server": "tsc --project tsconfig.server.json",
-    "build:svelte": "tsc --project tsconfig.svelte.json && mkdir -p dist && rm -rf dist/svelte && mv distsvelte/svelte dist/svelte && rm -r distsvelte",
-    "build:sveltekit": "tsc --project tsconfig.sveltekit.json && mkdir -p dist && rm -rf dist/sveltekit && mv distsveltekit/sveltekit dist/sveltekit && rm -r distsveltekit",
-    "build": "rm -rf dist && npm run build:bin && npm run build:server && npm run build:svelte && npm run build:sveltekit",
-    "docs": "cd docs && npm run dev",
-    "lint": "tsc && eslint . && cd test && npm run lint",
-    "spellcheck": "cspell \"docs/pages/**/*.md*\"",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run lint && npm run build && npm run test:once",
-    "publish:example": "node publishExample.mjs",
-    "test": "cd test && npm run test",
-    "test:once": "cd test && npm run test:once"
-  },
-  "exports": {
-    "./server": {
-      "types": "./dist/server/index.d.ts",
-      "import": "./dist/server/index.js"
-    },
-    "./providers/*": {
-      "types": "./dist/providers/*.d.ts",
-      "import": "./dist/providers/*.js"
-    },
-    "./svelte": {
-      "import": "./dist/svelte/index.js",
-      "types": "./dist/svelte/index.d.ts"
-    },
-    "./sveltekit": {
-      "import": "./dist/sveltekit/index.js",
-      "require": "./dist/sveltekit/index.js"
-    },
-    "./sveltekit/server": {
-      "import": "./dist/sveltekit/server/index.js",
-      "require": "./dist/sveltekit/server/index.js"
-    }
-  },
-  "dependencies": {
-    "cookie": "^1.0.2",
-    "is-network-error": "^1.1.0",
-    "jose": "^5.2.2",
-    "jwt-decode": "^4.0.0",
-    "lucia": "^3.2.0",
-    "oauth4webapi": "^3.1.2",
-    "oslo": "^1.1.2",
-    "path-to-regexp": "^8.2.0",
-    "server-only": "^0.0.1"
-  },
-  "peerDependencies": {
-    "@auth/core": "^0.37.0",
-    "convex": "^1.17.0",
-    "convex-svelte": "^0.0.11"
-  },
-  "@comment devDependencies": [
-    "The dependencies of the CLI are also in devDependencies, built into",
-    "a bundle."
-  ],
-  "devDependencies": {
-    "@commander-js/extra-typings": "^12.1.0",
-    "@edge-runtime/vm": "^3.2.0",
-    "@sveltejs/kit": "^2.20.8",
-    "@sveltejs/vite-plugin-svelte": "^5.0.3",
-    "@types/inquirer": "^9.0.7",
-    "@types/node": "20.6.0",
-    "@typescript-eslint/eslint-plugin": "^6.18.1",
-    "chalk": "^5.3.0",
-    "convex-test": "^0.0.20",
-    "cspell": "^8.17.2",
-    "dotenv": "^16.4.5",
-    "eslint": "8.49.0",
-    "inquirer": "^9.2.22",
-    "npm-run-all": "^4.1.5",
-    "shelljs": "^0.9.2",
-    "svelte": "^5.28.2",
-    "svelte-check": "^4.1.7",
-    "tsup": "^8.0.1",
-    "typescript": "^5.8.3",
-    "valibot": "^1.0.0",
-    "vite": "^6.3.4",
-    "vitest": "^1.6.1"
-  }
+	"name": "@mmailaender/convex-svelte-auth",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"files": [
+		"dist",
+		"!dist/**/*.test.*",
+		"!dist/**/*.spec.*",
+		"src/lib",
+		"!src/lib/**/*.test.*",
+		"!src/lib/**/*.spec.*"
+	],
+	"sideEffects": [
+		"**/*.css"
+	],
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"package": "svelte-kit sync && svelte-package && publint",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"format": "prettier --write .",
+		"lint": "prettier --check ."
+	},
+	"exports": {
+		"./server": {
+			"types": "./dist/server/index.d.ts",
+			"import": "./dist/server/index.js"
+		},
+		"./svelte": {
+			"types": "./dist/svelte/index.d.ts",
+			"svelte": "./dist/svelte/index.svelte.js",
+			"default": "./dist/svelte/index.svelte.js"
+		},
+		"./sveltekit": {
+			"types": "./dist/sveltekit/index.d.ts",
+			"svelte": "./dist/sveltekit/index.js",
+			"default": "./dist/sveltekit/index.js"
+		},
+		"./sveltekit/server": {
+			"types": "./dist/sveltekit/server/index.d.ts",
+			"import": "./dist/sveltekit/server/index.js"
+		}
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^6.0.0",
+		"@sveltejs/kit": "^2.21.1",
+		"@sveltejs/package": "^2.3.11",
+		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"prettier": "^3.4.2",
+		"prettier-plugin-svelte": "^3.3.3",
+		"publint": "^0.3.12",
+		"svelte": "^5.0.0",
+		"svelte-check": "^4.0.0",
+		"typescript": "^5.0.0",
+		"vite": "^6.2.6"
+	},
+	"peerDependencies": {
+		"@sveltejs/kit": "^2.21.0"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"esbuild"
+		]
+	}
 }
