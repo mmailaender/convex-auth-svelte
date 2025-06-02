@@ -1,5 +1,5 @@
 import { ConvexHttpClient } from "convex/browser";
-import { env } from "$env/dynamic/public";
+import { PUBLIC_CONVEX_URL } from "$env/static/public";
 
 // For debug logging
 export function logVerbose(message: string, verbose: boolean = false) {
@@ -66,8 +66,8 @@ export function getConvexUrl(
 ): string {
   let url = deploymentUrl;
   // Check for the SvelteKit environment variable (available in SvelteKit apps)
-  if (!url && typeof env.PUBLIC_CONVEX_URL !== "undefined") {
-    url = env.PUBLIC_CONVEX_URL;
+  if (!url && typeof PUBLIC_CONVEX_URL !== "undefined") {
+    url = PUBLIC_CONVEX_URL;
   }
 
   // Try to load from process.env if available in the environment
