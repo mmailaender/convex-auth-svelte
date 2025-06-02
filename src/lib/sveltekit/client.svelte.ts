@@ -2,7 +2,7 @@
  * SvelteKit implementation of Convex Auth client.
  */
 import { invalidateAll, replaceState } from "$app/navigation";
-import { PUBLIC_CONVEX_URL } from "$env/static/public";
+import { env } from "$env/dynamic/public";
 import {
   createAuthClient,
   setConvexAuthContext,
@@ -35,7 +35,7 @@ export function createSvelteKitAuthClient({
 }) {
   const url =
     convexUrl ??
-    PUBLIC_CONVEX_URL ??
+    env.PUBLIC_CONVEX_URL ??
     (() => {
       throw new Error(
         "No Convex URL provided. Either pass convexUrl parameter or set PUBLIC_CONVEX_URL environment variable.",

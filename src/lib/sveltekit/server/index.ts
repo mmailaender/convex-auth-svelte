@@ -11,7 +11,7 @@ import {
   type RouteMatcherFn,
 } from "./routeMatcher.js";
 import type { CookieOptions } from "./cookies.js";
-import { ConvexAuthServerState } from "../../svelte/index.svelte.js";
+import type { ConvexAuthServerState } from "../../svelte/index.svelte.js";
 
 /**
  * Options for the createConvexAuthHandlers and createConvexAuthHooks functions

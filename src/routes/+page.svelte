@@ -1,5 +1,5 @@
 <script>
-	import { useAuth } from '@convex-dev/auth/sveltekit';
+	import { useAuth } from '$lib/sveltekit';
 
 	const { signOut } = useAuth();
 	const isAuthenticated = $derived(useAuth().isAuthenticated);

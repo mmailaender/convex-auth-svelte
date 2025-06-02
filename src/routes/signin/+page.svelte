@@ -1,5 +1,5 @@
 <script>
-	import { useAuth } from '@mmailaender/convex-svelte-auth/sveltekit';
+	import { useAuth } from '$lib/sveltekit';
 	import { goto } from '$app/navigation';
     
 	import { env } from '$env/dynamic/public';

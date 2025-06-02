@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { api } from '$lib/convex/_generated/api.js';
-import { createConvexAuthHandlers } from '@convex-dev/auth/sveltekit/server';
+import { createConvexAuthHandlers } from '$lib/sveltekit/server';
 
 export const load = (async (event) => {
     const { createConvexHttpClient} = await createConvexAuthHandlers();

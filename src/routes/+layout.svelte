@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setupConvexAuth } from '@convex-dev/auth/sveltekit';
+	import { setupConvexAuth } from '$lib/sveltekit';
 
 	import '../app.css';
 

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { api } from '$lib/convex/_generated/api';
-	import Chat from '$lib/Chat/Chat.svelte';
-	import ChatIntro from '$lib/Chat/ChatIntro.svelte';
-	import UserMenu from '$lib/UserMenu.svelte';
+	import Chat from '$lib/demo/Chat/Chat.svelte';
+	import ChatIntro from '$lib/demo/Chat/ChatIntro.svelte';
+	import UserMenu from '$lib/demo/UserMenu.svelte';
 	import { useQuery } from 'convex-svelte';
 
 	let { data } = $props();

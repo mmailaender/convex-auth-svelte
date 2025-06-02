@@ -1,13 +1,13 @@
 import { sequence } from '@sveltejs/kit/hooks';
-import { createConvexAuthHooks, createRouteMatcher } from '@convex-dev/auth/sveltekit/server';
-import { PUBLIC_CONVEX_URL } from '$env/static/public';
+import { createConvexAuthHooks, createRouteMatcher } from '$lib/sveltekit/server';
+import { env } from '$env/dynamic/public';
 import { redirect, type Handle } from '@sveltejs/kit';
 
 const isSignInPage = createRouteMatcher('/signin');
 const isProtectedRoute = createRouteMatcher(['/product{/*rest}']);
 
 const { handleAuth, isAuthenticated: isAuthenticatedPromise } = createConvexAuthHooks({
-	convexUrl: PUBLIC_CONVEX_URL,
+	convexUrl: env.PUBLIC_CONVEX_URL,
 	verbose: true
 });
 
