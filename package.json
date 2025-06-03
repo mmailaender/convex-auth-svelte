@@ -63,6 +63,7 @@
 		"@types/node": "^22.15.29",
 		"convex": "^1.24.3",
 		"convex-svelte": "^0.0.11",
+		"dotenv": "^16.5.0",
 		"jose": "^6.0.11",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
