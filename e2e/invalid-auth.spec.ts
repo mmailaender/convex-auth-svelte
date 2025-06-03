@@ -9,6 +9,7 @@ test("invalid auth cookie redirects to signin page", async ({
   const expirationTime = new Date(
     Date.now() + 12 * 60 * 60 * 1000, // 12 hours in the future
   );
+  const secret = new TextEncoder().encode("test-secret");
   const jwt = await new SignJWT({
     sub: "blahblahblah",
   })
@@ -17,7 +18,7 @@ test("invalid auth cookie redirects to signin page", async ({
     .setIssuer("https://example.com")
     .setAudience("convex")
     .setExpirationTime(expirationTime)
-    .sign(new TextEncoder().encode(""));
+    .sign(secret);
   
   // Set cookies for the fake JWT and a junk refresh token too.
   await context.addCookies([
@@ -32,5 +33,5 @@ test("invalid auth cookie redirects to signin page", async ({
 
   // An attempt to go to a protected route should redirect to sign-in.
   await page.goto("/product");
-  await page.waitForURL("/signin");
+  await page.waitForURL(/.*\/signin(\?.*)?$/);  // Match any URL ending with /signin, optionally followed by query parameters
 });
