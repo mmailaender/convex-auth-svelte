@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@auth/core':
-        specifier: ^0.37.0
-        version: 0.37.4
+        specifier: ^0.39.1
+        version: 0.39.1
       cookie:
         specifier: ^1.0.2
         version: 1.0.2
@@ -26,7 +26,7 @@ importers:
     devDependencies:
       '@convex-dev/auth':
         specifier: ^0.0.86
-        version: 0.0.86(@auth/core@0.37.4)(convex@1.24.6)
+        version: 0.0.86(@auth/core@0.39.1)(convex@1.24.6)
       '@playwright/test':
         specifier: ^1.52.0
         version: 1.52.0
@@ -118,8 +118,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@auth/core@0.37.4':
-    resolution: {integrity: sha512-HOXJwXWXQRhbBDHlMU0K/6FT1v+wjtzdKhsNg0ZN7/gne6XPsIrjZ4daMcFnbq0Z/vsAbYBinQhhua0d77v7qw==}
+  '@auth/core@0.39.1':
+    resolution: {integrity: sha512-McD8slui0oOA1pjR5sPjLPl5Zm//nLP/8T3kr8hxIsvNLvsiudYvPHhDFPjh1KcZ2nFxCkZmP6bRxaaPd/AnLA==}
     peerDependencies:
       '@simplewebauthn/browser': ^9.0.1
       '@simplewebauthn/server': ^9.0.2
@@ -1866,10 +1866,10 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@auth/core@0.37.4':
+  '@auth/core@0.39.1':
     dependencies:
       '@panva/hkdf': 1.2.1
-      jose: 5.10.0
+      jose: 6.0.11
       oauth4webapi: 3.5.1
       preact: 10.24.3
       preact-render-to-string: 6.5.11(preact@10.24.3)
@@ -1884,9 +1884,9 @@ snapshots:
 
   '@babel/runtime@7.27.4': {}
 
-  '@convex-dev/auth@0.0.86(@auth/core@0.37.4)(convex@1.24.6)':
+  '@convex-dev/auth@0.0.86(@auth/core@0.39.1)(convex@1.24.6)':
     dependencies:
-      '@auth/core': 0.37.4
+      '@auth/core': 0.39.1
       convex: 1.24.6
       cookie: 1.0.2
       is-network-error: 1.1.0
