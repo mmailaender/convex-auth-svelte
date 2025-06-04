@@ -70,7 +70,7 @@ Set up authentication in your root layout:
 ```html
 <!-- src/routes/+layout.svelte -->
 <script>
-  import { setupConvexAuth } from '@convex-dev/auth/sveltekit';
+  import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
   
   // Import data from +layout.server.ts 
   let { children, data } = $props();
@@ -108,7 +108,7 @@ Load the authentication state in your layout server:
 
 ```ts
 // src/routes/+layout.server.ts
-import { createConvexAuthHandlers } from '@convex-dev/auth/sveltekit/server';
+import { createConvexAuthHandlers } from '@mmailaender/convex-auth-svelte/sveltekit/server';
 import type { LayoutServerLoad } from './$types';
 
 // Create auth handlers - convexUrl is automatically detected from environment 
@@ -127,7 +127,7 @@ Create hooks to handle authentication in `src/hooks.server.ts`.
 ```ts
 // src/hooks.server.ts
 import { sequence } from '@sveltejs/kit/hooks';
-import { createConvexAuthHooks } from '@convex-dev/auth/sveltekit/server';
+import { createConvexAuthHooks } from '@mmailaender/convex-auth-svelte/sveltekit/server';
 
 // Create auth hooks - convexUrl is automatically detected from environment
 const { handleAuth } = createConvexAuthHooks();
@@ -150,7 +150,7 @@ The following example shows how to create a simple login/logout component:
 ```html
 <!-- src/routes/+page.svelte -->
 <script>
-  import { useAuth } from '@convex-dev/auth/sveltekit';
+  import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 
   const isAuthenticated = $derived(useAuth().isAuthenticated);
   const isLoading = $derived(useAuth().isLoading);
@@ -175,7 +175,7 @@ For email/password authentication:
 
 ```html
 <script>
-  import { useAuth } from '@convex-dev/auth/sveltekit';
+  import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 
   const { signIn } = useAuth();
   
@@ -192,7 +192,7 @@ You can check the authentication state to conditionally render components:
 
 ```html
 <script>
-  import { useAuth } from '@convex-dev/auth/sveltekit';
+  import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
   
   const isAuthenticated = $derived(useAuth().isAuthenticated);
   const isLoading = $derived(useAuth().isLoading);
@@ -278,7 +278,7 @@ The `createConvexHttpClient` function provided by the server handlers allows you
 // src/routes/some-page/+page.server.ts
 import type { PageServerLoad } from './$types';
 import { api } from '$convex/_generated/api.js';
-import { createConvexAuthHandlers } from '@convex-dev/auth/sveltekit/server';
+import { createConvexAuthHandlers } from '@mmailaender/convex-auth-svelte/sveltekit/server';
 
 export const load = (async (event) => {
   const { createConvexHttpClient } = createConvexAuthHandlers();
@@ -316,7 +316,7 @@ import { redirect, type Handle } from '@sveltejs/kit';
 import { 
   createConvexAuthHooks, 
   createRouteMatcher 
-} from '@convex-dev/auth/sveltekit/server';
+} from '@mmailaender/convex-auth-svelte/sveltekit/server';
 
 const isPublicRoute = createRouteMatcher([
   '/signin',
@@ -363,7 +363,7 @@ import { redirect, type Handle } from '@sveltejs/kit';
 import { 
   createConvexAuthHooks, 
   createRouteMatcher 
-} from '@convex-dev/auth/sveltekit/server';
+} from '@mmailaender/convex-auth-svelte/sveltekit/server';
 
 const isProtectedRoute = createRouteMatcher([
   '/dashboard',
@@ -403,7 +403,7 @@ Use auth state in page server load functions:
 
 ```ts
 // src/routes/profile/+page.server.ts
-import { createConvexAuthHandlers } from '@convex-dev/auth/sveltekit/server';
+import { createConvexAuthHandlers } from '@mmailaender/convex-auth-svelte/sveltekit/server';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
