@@ -22,27 +22,19 @@ This package provides authentication functionality for SvelteKit applications us
   - [Option 1: App-wide Protection (Using Hooks) *Recommended*](#option-1-app-wide-protection-using-hooks)
   - [Option 2: Page-level Protection (Using Page Server Load)](#option-2-page-level-protection-using-page-server-load)
 
-## Installation
-
-```bash
-npm install @convex-dev/auth @auth/core
-# or
-pnpm add @convex-dev/auth @auth/core
-# or
-yarn add @convex-dev/auth @auth/core
-```
-
 ## Setup
 
-### 1. Environment Variables
+This guide assumes you already have a [working Convex app](https://docs.convex.dev/quickstart/svelte).
 
-Create or update your `.env` file with the following variables:
+### 1. Install Dependencies
 
 ```bash
-PUBLIC_CONVEX_URL=your_convex_deployment_url
+npm install @convex-dev/auth @auth/core @mmailaender/convex-auth-svelte
+# or
+pnpm add @convex-dev/auth @auth/core @mmailaender/convex-auth-svelte
+# or
+yarn add @convex-dev/auth @auth/core @mmailaender/convex-auth-svelte
 ```
-
-For local development, you can also create a `.env.local` file.
 
 ### 2. Run the initialization command
 
@@ -52,7 +44,26 @@ npx @convex-dev/auth
 
 This sets up your project for authenticating via the library.
 
-### 3. Initialize Auth (Client-side)
+### 3. Add authentication tables to your schema
+
+Convex Auth assumes you have several tables set up with specific indexes.
+
+You can add these tables to your [schema](https://docs.convex.dev/database/schemas) via the authTables export:
+
+```ts
+// src/convex/schema.ts
+import { defineSchema } from "convex/server";
+import { authTables } from "@convex-dev/auth/server";
+ 
+const schema = defineSchema({
+  ...authTables,
+  // Your other tables...
+});
+ 
+export default schema;
+```
+
+### 4. Initialize Auth (Client-side)
 
 Set up authentication in your root layout:
 
@@ -91,7 +102,7 @@ The `setupConvexAuth` function will try to create a Convex client in the followi
 
 This makes it work seamlessly with different setup patterns.
 
-### 4. Add Auth State in Layout Server
+### 5. Add Auth State in Layout Server
 
 Load the authentication state in your layout server:
 
@@ -109,7 +120,7 @@ export const load: LayoutServerLoad = async (event) => {
 };
 ```
 
-### 5. Configure Auth Hooks (Server-side)
+### 6. Configure Auth Hooks (Server-side)
 
 Create hooks to handle authentication in `src/hooks.server.ts`.
 
