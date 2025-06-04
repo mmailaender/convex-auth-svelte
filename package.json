@@ -1,7 +1,12 @@
 {
-	"name": "@mmailaender/convex-svelte-auth",
-	"private": true,
+	"name": "@mmailaender/convex-auth-svelte",
+	"author": "Micha Mailaender",
 	"version": "0.0.1",
+	"license": "ISC",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/mmailaender/convex-auth-svelte.git"
+	},
 	"type": "module",
 	"files": [
 		"dist/svelte",
