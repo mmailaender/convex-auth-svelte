@@ -1,6 +1,6 @@
 # Convex Auth for Svelte
 
-This package provides authentication functionality for SvelteKit applications using Convex as a backend. It includes only client-side components. For server-side integration, see the [SvelteKit docs](src/lib/sveltekit/README.md).
+This package provides authentication functionality for SvelteKit applications using Convex as a backend. It includes only client-side components. For server-side integration, see the [SvelteKit docs](/src/lib/sveltekit/README.md).
 
 ## Table of Contents
 
