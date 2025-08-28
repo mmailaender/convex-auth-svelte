@@ -8,11 +8,18 @@ import {
   useAuth,
   type TokenStorage, 
   type ConvexAuthActionsContext,
-  type ConvexAuthServerState 
 } from "../svelte/index.svelte.js";
 
 import { ConvexClient, type ConvexClientOptions } from "convex/browser";
 import { createSvelteKitAuthClient } from "./client.svelte.js";
+
+/**
+ * Type definition for the server state
+ */
+type ConvexAuthServerState = {
+  _state: { token: string | null; refreshToken: string | null };
+  _timeFetched: number;
+};
 
 /**
  * Initialize Convex Auth for SvelteKit.
