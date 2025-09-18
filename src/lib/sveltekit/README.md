@@ -179,9 +179,14 @@ For email/password authentication:
 
   const { signIn } = useAuth();
   
-  // With params (e.g., for email+password)
+  // Register new user or login if exists
+  function handleEmailSignUp(email, password) {
+    signIn('password', { email, password, flow: 'signUp' });
+  }
+
+  // Login
   function handleEmailSignIn(email, password) {
-    signIn('email', { email, password });
+    signIn('password', { email, password, flow: 'signIn' });
   }
 </script>
 ```
