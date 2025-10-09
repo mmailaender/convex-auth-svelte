@@ -14,7 +14,7 @@ import type {
 import type { AuthClient } from "./clientType.js";
 import type { TokenStorage } from "./index.svelte.js";
 import type { Value } from "convex/values";
-import type { ConvexAuthServerState } from "$lib/sveltekit/index.js";
+import type { ConvexAuthServerState } from "../sveltekit/index.js";
 
 // Retry after this much time, based on the retry number.
 const RETRY_BACKOFF = [500, 2000]; // In ms
