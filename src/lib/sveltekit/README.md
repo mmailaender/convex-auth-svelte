@@ -167,7 +167,6 @@ The following example shows how to create a simple login/logout component:
   <button onclick={() => signIn('google')}>
     Sign in with Google
   </button>
-</div>
 {/if}
 ```
 
