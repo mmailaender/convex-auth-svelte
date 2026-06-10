@@ -31,6 +31,7 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"package": "svelte-kit sync && svelte-package && publint",
+		"lint:package": "svelte-kit sync && svelte-package && pnpm pack --out /tmp/convex-auth-svelte-package.tgz && publint /tmp/convex-auth-svelte-package.tgz",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
