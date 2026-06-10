@@ -1,5 +1,5 @@
-import { httpRouter } from "convex/server";
-import { auth } from "./auth";
+import { httpRouter } from 'convex/server';
+import { auth } from './auth';
 
 const http = httpRouter();
 

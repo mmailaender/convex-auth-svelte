@@ -1,7 +1,7 @@
 <script>
 	import { useAuth } from '$lib/sveltekit';
 	import { goto } from '$app/navigation';
-    
+
 	import { env } from '$env/dynamic/public';
 
 	const { signIn } = useAuth();

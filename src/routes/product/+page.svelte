@@ -7,7 +7,7 @@
 
 	let { data } = $props();
 
-	const viewer = useQuery(api.users.viewer, {}, () => ({initialData: data.viewer}));
+	const viewer = useQuery(api.users.viewer, {}, () => ({ initialData: data.viewer }));
 </script>
 
 {#if viewer.data}

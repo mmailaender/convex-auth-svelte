@@ -18,10 +18,13 @@ const authFirstPattern: Handle = async ({ event, resolve }) => {
 		redirect(307, '/product');
 	}
 	if (isProtectedRoute(event.url.pathname) && !isAuthenticated) {
-		redirect(307, `/signin?redirectTo=${encodeURIComponent(event.url.pathname + event.url.search)}`);
+		redirect(
+			307,
+			`/signin?redirectTo=${encodeURIComponent(event.url.pathname + event.url.search)}`
+		);
 	}
 
 	return resolve(event);
-}
+};
 
 export const handle = sequence(handleAuth, authFirstPattern);

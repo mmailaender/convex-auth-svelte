@@ -19,7 +19,7 @@ This package provides authentication functionality for SvelteKit applications us
     - [Making Authenticated Requests (Client-side)](#making-authenticated-requests-client-side)
     - [Making Authenticated Requests (Server-side)](#making-authenticated-requests-server-side)
 - [Route Protection](#route-protection)
-  - [Option 1: App-wide Protection (Using Hooks) *Recommended*](#option-1-app-wide-protection-using-hooks)
+  - [Option 1: App-wide Protection (Using Hooks) _Recommended_](#option-1-app-wide-protection-using-hooks)
   - [Option 2: Page-level Protection (Using Page Server Load)](#option-2-page-level-protection-using-page-server-load)
 
 ## Setup
@@ -52,14 +52,14 @@ You can add these tables to your [schema](https://docs.convex.dev/database/schem
 
 ```ts
 // src/convex/schema.ts
-import { defineSchema } from "convex/server";
-import { authTables } from "@convex-dev/auth/server";
- 
+import { defineSchema } from 'convex/server';
+import { authTables } from '@convex-dev/auth/server';
+
 const schema = defineSchema({
-  ...authTables,
-  // Your other tables...
+	...authTables
+	// Your other tables...
 });
- 
+
 export default schema;
 ```
 
@@ -70,35 +70,36 @@ Set up authentication in your root layout:
 ```html
 <!-- src/routes/+layout.svelte -->
 <script>
-  import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
-  
-  // Import data from +layout.server.ts 
-  let { children, data } = $props();
-  
-  // Set up authentication (automatically initializes Convex client)
-  setupConvexAuth({ getServerState: () => data.authState });
-  
-  // Alternatively, you have these options:
-  
-  // Option 1: Provide a custom Convex URL
-  // setupConvexAuth({
-  //   getServerState: () => data.authState,
-  //   convexUrl: "https://your-convex-deployment.convex.cloud"
-  // });
-  
-  // Option 2: Provide your own ConvexClient instance
-  // import { ConvexClient } from "convex/browser";
-  // const client = new ConvexClient("https://your-deployment.convex.cloud");
-  // setupConvexAuth({ getServerState: () => data.authState, client });
+	import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
+
+	// Import data from +layout.server.ts
+	let { children, data } = $props();
+
+	// Set up authentication (automatically initializes Convex client)
+	setupConvexAuth({ getServerState: () => data.authState });
+
+	// Alternatively, you have these options:
+
+	// Option 1: Provide a custom Convex URL
+	// setupConvexAuth({
+	//   getServerState: () => data.authState,
+	//   convexUrl: "https://your-convex-deployment.convex.cloud"
+	// });
+
+	// Option 2: Provide your own ConvexClient instance
+	// import { ConvexClient } from "convex/browser";
+	// const client = new ConvexClient("https://your-deployment.convex.cloud");
+	// setupConvexAuth({ getServerState: () => data.authState, client });
 </script>
 
 {@render children()}
 ```
 
 The `setupConvexAuth` function will try to create a Convex client in the following order:
+
 1. Use a client you provide directly (if any)
 2. Look for a client in Svelte context (if available)
-3. Create a new client automatically 
+3. Create a new client automatically
 
 This makes it work seamlessly with different setup patterns.
 
@@ -111,12 +112,12 @@ Load the authentication state in your layout server:
 import { createConvexAuthHandlers } from '@mmailaender/convex-auth-svelte/sveltekit/server';
 import type { LayoutServerLoad } from './$types';
 
-// Create auth handlers - convexUrl is automatically detected from environment 
+// Create auth handlers - convexUrl is automatically detected from environment
 const { getAuthState } = createConvexAuthHandlers();
 
 // Export load function to provide auth state to layout
 export const load: LayoutServerLoad = async (event) => {
-  return { authState: await getAuthState(event) };
+	return { authState: await getAuthState(event) };
 };
 ```
 
@@ -134,8 +135,8 @@ const { handleAuth } = createConvexAuthHooks();
 
 // Apply hooks in sequence
 export const handle = sequence(
-  handleAuth,  // This handles all POST requests to /api/auth automatically
-  // Your other custom handlers...
+	handleAuth // This handles all POST requests to /api/auth automatically
+	// Your other custom handlers...
 );
 ```
 
@@ -150,23 +151,21 @@ The following example shows how to create a simple login/logout component:
 ```html
 <!-- src/routes/+page.svelte -->
 <script>
-  import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
+	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 
-  const isAuthenticated = $derived(useAuth().isAuthenticated);
-  const isLoading = $derived(useAuth().isLoading);
-  const { signIn, signOut } = useAuth();
+	const isAuthenticated = $derived(useAuth().isAuthenticated);
+	const isLoading = $derived(useAuth().isLoading);
+	const { signIn, signOut } = useAuth();
 </script>
 
 {#if isLoading}
-  <p>Loading authentication state...</p>
+<p>Loading authentication state...</p>
 {:else if isAuthenticated}
-  <h1>Welcome, authenticated user!</h1>
-  <button onclick={() => signOut()}>Sign Out</button>
+<h1>Welcome, authenticated user!</h1>
+<button onclick="{()" ="">signOut()}>Sign Out</button>
 {:else}
-  <h1>Please sign in</h1>
-  <button onclick={() => signIn('google')}>
-    Sign in with Google
-  </button>
+<h1>Please sign in</h1>
+<button onclick="{()" ="">signIn('google')}> Sign in with Google</button>
 {/if}
 ```
 
@@ -174,19 +173,19 @@ For email/password authentication:
 
 ```html
 <script>
-  import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
+	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
 
-  const { signIn } = useAuth();
-  
-  // Register new user or login if exists
-  function handleEmailSignUp(email, password) {
-    signIn('password', { email, password, flow: 'signUp' });
-  }
+	const { signIn } = useAuth();
 
-  // Login
-  function handleEmailSignIn(email, password) {
-    signIn('password', { email, password, flow: 'signIn' });
-  }
+	// Register new user or login if exists
+	function handleEmailSignUp(email, password) {
+		signIn('password', { email, password, flow: 'signUp' });
+	}
+
+	// Login
+	function handleEmailSignIn(email, password) {
+		signIn('password', { email, password, flow: 'signIn' });
+	}
 </script>
 ```
 
@@ -196,18 +195,18 @@ You can check the authentication state to conditionally render components:
 
 ```html
 <script>
-  import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
-  
-  const isAuthenticated = $derived(useAuth().isAuthenticated);
-  const isLoading = $derived(useAuth().isLoading);
+	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
+
+	const isAuthenticated = $derived(useAuth().isAuthenticated);
+	const isLoading = $derived(useAuth().isLoading);
 </script>
 
 {#if isLoading}
-  <p>Loading...</p>
+<p>Loading...</p>
 {:else if isAuthenticated}
-  <p>You are signed in!</p>
+<p>You are signed in!</p>
 {:else}
-  <p>Not signed in.</p>
+<p>Not signed in.</p>
 {/if}
 ```
 
@@ -220,55 +219,54 @@ On the client side, you can use the Convex Svelte integration to make authentica
 ```html
 <!-- src/routes/some-page/+page.svelte -->
 <script lang="ts">
-  import { api } from '$convex/_generated/api';
-  import { useQuery, useConvexClient } from 'convex-svelte';
+	import { api } from '$convex/_generated/api';
+	import { useQuery, useConvexClient } from 'convex-svelte';
 
-  // Get data from +page.server.ts (initial loading)
-  let { data } = $props();
+	// Get data from +page.server.ts (initial loading)
+	let { data } = $props();
 
-  // Make an authenticated query
-  // The initial data comes from the server for faster rendering
-  const viewer = useQuery(api.users.viewer, {}, () => ({
-    initialData: data.viewer
-  }));
+	// Make an authenticated query
+	// The initial data comes from the server for faster rendering
+	const viewer = useQuery(api.users.viewer, {}, () => ({
+		initialData: data.viewer
+	}));
 
-  // Get Convex client for mutations
-  const client = useConvexClient();
-  
-  // Example message state
-  let messageText = $state('');
+	// Get Convex client for mutations
+	const client = useConvexClient();
 
-  // Function to handle sending a message using mutation
-  async function handleSend(event) {
-    event.preventDefault();
-    if (messageText.trim() === '') return;
-    
-    try {
-      // Execute the mutation directly using the client
-      await client.mutation(api.messages.send, { body: messageText });
-      messageText = '';
-    } catch (error) {
-      console.error('Failed to send message:', error);
-    }
-  }
+	// Example message state
+	let messageText = $state('');
+
+	// Function to handle sending a message using mutation
+	async function handleSend(event) {
+		event.preventDefault();
+		if (messageText.trim() === '') return;
+
+		try {
+			// Execute the mutation directly using the client
+			await client.mutation(api.messages.send, { body: messageText });
+			messageText = '';
+		} catch (error) {
+			console.error('Failed to send message:', error);
+		}
+	}
 </script>
 
 {#if viewer.data}
-  <div>
-    <h1>Welcome, {viewer.data.name}!</h1>
-    
-    <!-- Message form example -->
-    <form onsubmit={handleSend} class="flex gap-2 p-4">
-      <input type="text" bind:value={messageText} placeholder="Write a message..." class="input" />
-      <button type="submit" disabled={messageText === ''} class="btn">
-        Send
-      </button>
-    </form>
-  </div>
+<div>
+	<h1>Welcome, {viewer.data.name}!</h1>
+
+	<!-- Message form example -->
+	<form onsubmit="{handleSend}" class="flex gap-2 p-4">
+		<input type="text" bind:value="{messageText}" placeholder="Write a message..." class="input" />
+		<button type="submit" disabled="{messageText" ="" ="" ="" } class="btn">Send</button>
+	</form>
+</div>
 {/if}
 ```
 
 This approach:
+
 - Uses `useQuery` from Convex Svelte to make authenticated queries
 - Leverages server-side data as initial data for a smoother user experience
 - Uses `useConvexClient()` to get the Convex client for making mutations
@@ -285,21 +283,22 @@ import { api } from '$convex/_generated/api.js';
 import { createConvexAuthHandlers } from '@mmailaender/convex-auth-svelte/sveltekit/server';
 
 export const load = (async (event) => {
-  const { createConvexHttpClient } = createConvexAuthHandlers();
-  
-  // Create an authenticated HTTP client
-  // If the user is authenticated, this client will have the auth token
-  // If not, it will be an unauthenticated client
-  const client = await createConvexHttpClient(event);
+	const { createConvexHttpClient } = createConvexAuthHandlers();
 
-  // Make authenticated queries to your Convex backend
-  const viewer = await client.query(api.users.viewer, {});
-  
-  return { viewer };
+	// Create an authenticated HTTP client
+	// If the user is authenticated, this client will have the auth token
+	// If not, it will be an unauthenticated client
+	const client = await createConvexHttpClient(event);
+
+	// Make authenticated queries to your Convex backend
+	const viewer = await client.query(api.users.viewer, {});
+
+	return { viewer };
 }) satisfies PageServerLoad;
 ```
 
 The `createConvexHttpClient` function automatically:
+
 - Creates a Convex HTTP client using the Convex URL (automatically detected from environment variables)
 - Sets the authentication token if the user is signed in
 - Returns an unauthenticated client if the user is not signed in
@@ -308,26 +307,27 @@ You can then use this client to make authenticated queries and mutations to your
 
 ## Route Protection
 
-### Option 1: App-wide Protection (Using Hooks) >*Recommended*<
+### Option 1: App-wide Protection (Using Hooks) >_Recommended_<
 
 #### Example 1: Auth-first approach (whitelist pattern)
+
 Most routes require authentication except for a few public ones
 
 ```ts
 // src/hooks.server.ts
 import { sequence } from '@sveltejs/kit/hooks';
 import { redirect, type Handle } from '@sveltejs/kit';
-import { 
-  createConvexAuthHooks, 
-  createRouteMatcher 
+import {
+	createConvexAuthHooks,
+	createRouteMatcher
 } from '@mmailaender/convex-auth-svelte/sveltekit/server';
 
 const isPublicRoute = createRouteMatcher([
-  '/signin',
-  '/register',
-  '/about',
-  // Note: No need to add '/api/auth' here as the handleAuth middleware
-  // will process those requests before this middleware runs
+	'/signin',
+	'/register',
+	'/about'
+	// Note: No need to add '/api/auth' here as the handleAuth middleware
+	// will process those requests before this middleware runs
 ]);
 
 // Create auth hooks
@@ -335,45 +335,49 @@ const { handleAuth, isAuthenticated } = createConvexAuthHooks();
 
 // Create custom auth handler
 const requireAuth: Handle = async ({ event, resolve }) => {
-  // Allow public routes
-  if (isPublicRoute(event.url.pathname)) {
-    return resolve(event);
-  }
+	// Allow public routes
+	if (isPublicRoute(event.url.pathname)) {
+		return resolve(event);
+	}
 
-  // Check if user is authenticated
-  if (!(await isAuthenticated(event))) {
-    // Redirect to signin if not authenticated
-    throw redirect(302, `/signin?redirectTo=${encodeURIComponent(event.url.pathname + event.url.search)}`);
-  }
+	// Check if user is authenticated
+	if (!(await isAuthenticated(event))) {
+		// Redirect to signin if not authenticated
+		throw redirect(
+			302,
+			`/signin?redirectTo=${encodeURIComponent(event.url.pathname + event.url.search)}`
+		);
+	}
 
-  // User is authenticated, proceed
-  return resolve(event);
+	// User is authenticated, proceed
+	return resolve(event);
 };
 
 // Apply hooks in sequence
 export const handle = sequence(
-  handleAuth,  // This MUST come first to handle auth requests
-  requireAuth  // Then enforce authentication
+	handleAuth, // This MUST come first to handle auth requests
+	requireAuth // Then enforce authentication
 );
 ```
 
 #### Example 2: Public-first approach (blacklist pattern)
+
 Most routes are public except for a few protected ones
 
 ```ts
 // src/hooks.server.ts
 import { sequence } from '@sveltejs/kit/hooks';
 import { redirect, type Handle } from '@sveltejs/kit';
-import { 
-  createConvexAuthHooks, 
-  createRouteMatcher 
+import {
+	createConvexAuthHooks,
+	createRouteMatcher
 } from '@mmailaender/convex-auth-svelte/sveltekit/server';
 
 const isProtectedRoute = createRouteMatcher([
-  '/dashboard',
-  '/profile',
-  '/settings',
-  '/admin{/*rest}'  // Protect all routes under /admin
+	'/dashboard',
+	'/profile',
+	'/settings',
+	'/admin{/*rest}' // Protect all routes under /admin
 ]);
 
 // Create auth hooks
@@ -381,24 +385,24 @@ const { handleAuth, isAuthenticated } = createConvexAuthHooks();
 
 // Create custom auth handler
 const protectRoutes: Handle = async ({ event, resolve }) => {
-  // Only check auth for protected routes
-  if (isProtectedRoute(event.url.pathname)) {
-    // Check if user is authenticated
-    if (!(await isAuthenticated(event))) {
-      // Redirect to signin if not authenticated
-      throw redirect(302, `/signin?redirectTo=${encodeURIComponent(event.url.pathname + event.url.search)}`);
-    }
-  }
+	// Only check auth for protected routes
+	if (isProtectedRoute(event.url.pathname)) {
+		// Check if user is authenticated
+		if (!(await isAuthenticated(event))) {
+			// Redirect to signin if not authenticated
+			throw redirect(
+				302,
+				`/signin?redirectTo=${encodeURIComponent(event.url.pathname + event.url.search)}`
+			);
+		}
+	}
 
-  // Allow access to all other routes
-  return resolve(event);
+	// Allow access to all other routes
+	return resolve(event);
 };
 
 // Apply hooks in sequence
-export const handle = sequence(
-  handleAuth,
-  protectRoutes
-);
+export const handle = sequence(handleAuth, protectRoutes);
 ```
 
 ### Option 2: Page-level Protection (Using Page Server Load)
@@ -416,14 +420,20 @@ const { isAuthenticated } = createConvexAuthHandlers();
 
 // Protect routes at the page level
 export const load: PageServerLoad = async (event) => {
-  // Check if user is authenticated
-  if (!(await isAuthenticated(event))) {
-    // Redirect to signin if not authenticated
-    throw redirect(302, `/signin?redirectTo=${encodeURIComponent(event.url.pathname + event.url.search)}`);
-  }
-  
-  // Return data for authenticated users
-  return {
-    user: { /* user data */ }
-  };
+	// Check if user is authenticated
+	if (!(await isAuthenticated(event))) {
+		// Redirect to signin if not authenticated
+		throw redirect(
+			302,
+			`/signin?redirectTo=${encodeURIComponent(event.url.pathname + event.url.search)}`
+		);
+	}
+
+	// Return data for authenticated users
+	return {
+		user: {
+			/* user data */
+		}
+	};
 };
+```

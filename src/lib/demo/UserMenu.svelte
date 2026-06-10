@@ -40,7 +40,7 @@
 		triggerBase="btn"
 		contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
 		arrow
-		ids={{trigger: "user-menu-trigger"}}
+		ids={{ trigger: 'user-menu-trigger' }}
 	>
 		{#snippet trigger()}
 			<Avatar src={viewer.image} name={viewer.name ?? 'User'} size="size-10" />
