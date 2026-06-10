@@ -9,7 +9,7 @@ dotenv.config({ path: '.env.local' });
 
 export default defineConfig({
 	webServer: {
-		command: 'npm run build && npm run preview',
+		command: 'pnpm build && pnpm preview',
 		port: 4173
 	},
 	testDir: 'e2e'
