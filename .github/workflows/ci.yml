@@ -49,6 +49,8 @@ jobs:
         run: pnpm test
         env:
           PUBLIC_CONVEX_URL: ${{ vars.PUBLIC_CONVEX_URL }}
+          PUBLIC_E2E_TEST: 'true'
+          AUTH_E2E_TEST_SECRET: ${{ secrets.AUTH_E2E_TEST_SECRET }}
 
       - name: Check
         run: pnpm check
