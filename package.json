@@ -38,7 +38,10 @@
 		"lint": "prettier --check .",
 		"test:e2e": "playwright test",
 		"test": "pnpm test:unit && pnpm test:e2e",
-		"test:unit": "vitest run"
+		"test:unit": "vitest run",
+		"changeset": "changeset",
+		"version-packages": "changeset version",
+		"release": "changeset publish && git push --follow-tags"
 	},
 	"exports": {
 		"./svelte": {
@@ -57,6 +60,7 @@
 		}
 	},
 	"devDependencies": {
+		"@changesets/cli": "^2.31.0",
 		"@convex-dev/auth": "^0.0.94",
 		"@playwright/test": "^1.60.0",
 		"@skeletonlabs/skeleton": "^3.2.0",
