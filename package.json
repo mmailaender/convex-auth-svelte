@@ -31,7 +31,8 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"package": "svelte-kit sync && svelte-package && publint",
-		"lint:package": "svelte-kit sync && svelte-package && pnpm pack --out /tmp/convex-auth-svelte-package.tgz && publint /tmp/convex-auth-svelte-package.tgz",
+		"prepack": "pnpm package",
+		"lint:package": "pnpm pack --out /tmp/convex-auth-svelte-package.tgz && publint /tmp/convex-auth-svelte-package.tgz",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
@@ -98,6 +99,9 @@
 		"convex": "^1.24.3",
 		"convex-svelte": "^0.0.12",
 		"svelte": "^5.38.5"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
