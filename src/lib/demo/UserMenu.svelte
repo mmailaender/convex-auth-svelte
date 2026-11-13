@@ -3,7 +3,7 @@
 
 	import { Avatar, Popover } from '@skeletonlabs/skeleton-svelte';
 
-	import { useAuth } from '$lib/sveltekit';
+	import { useAuthActions } from '$lib/svelte/index.svelte';
 	import type { Id } from '$lib/convex/_generated/dataModel.js';
 
 	interface Props {
@@ -16,10 +16,10 @@
 
 	let { viewer }: Props = $props();
 
-	const auth = useAuth();
+	const { signOut } = useAuthActions();
 
 	async function handleSignOut() {
-		await auth.signOut();
+		await signOut();
 		await goto('/');
 	}
 

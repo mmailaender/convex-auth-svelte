@@ -141,9 +141,6 @@
 			"esbuild"
 		]
 	},
-	"dependencies": {
-		"path-to-regexp": "^8.4.2"
-	},
 	"peerDependenciesMeta": {
 		"@sveltejs/kit": {
 			"optional": true

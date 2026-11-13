@@ -1,8 +1,9 @@
 /**
- * Binds a `@convex-dev/auth` {@link AuthClient} to Svelte. Shared by the SPA
- * (`/svelte`) and the SvelteKit (`/sveltekit`) entry points, which differ only
- * in how they build the client: who holds the refresh token, and where the
- * sign-in functions run.
+ * Binds a `@convex-dev/auth` {@link AuthClient} to Svelte: the counterpart of
+ * `AuthProvider` and `SessionWatcher` in `@convex-dev/auth/react`. Shared by
+ * `setupConvexAuth` (SPA) and `setupConvexAuthSvelteKit` (SSR), which differ
+ * only in how they build the client: who holds the refresh token, and where
+ * the sign-in functions run.
  *
  * @module
  */
@@ -16,7 +17,7 @@ import type { NamespacedStorage } from './storage.js';
 
 const CONTEXT_KEY = Symbol('convex-auth-svelte');
 
-/** The values the method helpers need, provided by `setupConvexAuth`. */
+/** The values the hooks and method helpers read, set by the setup functions. */
 export type ConvexAuthContext = {
 	authClient: AuthClient;
 	/** Runs the sign-in functions of the methods. */
@@ -36,50 +37,21 @@ export type ConvexAuthContext = {
 	};
 };
 
-/** Read the context set by `setupConvexAuth`. Call during component init. */
+/** Read the context set by the setup functions. Call during component init. */
 export function getConvexAuthContext(caller: string): ConvexAuthContext {
 	const context = getContext<ConvexAuthContext | undefined>(CONTEXT_KEY);
 	if (context === undefined) {
 		throw new Error(
-			`${caller} must be called in a component below the one that calls setupConvexAuth().`
+			`${caller} must be called in a component that calls setupConvexAuth() or ` +
+				'setupConvexAuthSvelteKit(), or in one below it.'
 		);
 	}
 	return context;
 }
 
-/** The value returned by `setupConvexAuth` and `useAuth`. */
-export type ConvexAuth = {
-	/**
-	 * `true` until the session has been loaded, and while a sign-in completes
-	 * without a user action on the page (e.g. an OAuth redirect coming back),
-	 * or while the backend has not yet confirmed a new token.
-	 */
-	readonly isLoading: boolean;
-	/** Whether the Convex backend has confirmed the current access token. */
-	readonly isAuthenticated: boolean;
-	/**
-	 * The current access token (a JWT), or `null`. Use it to authenticate
-	 * requests to your Convex HTTP actions (`Authorization: Bearer <token>`).
-	 * Treat it as an ID token and do not send it to other servers.
-	 */
-	readonly token: string | null;
-	/** Revoke the session on the server and clear it locally. */
-	signOut(): Promise<void>;
-	/**
-	 * Adopt the session a sign-in function returned. The method helpers call
-	 * it for you; use it for a sign-in function you call yourself.
-	 */
-	setSession(session: TokenBundle | SlimTokenBundle): Promise<void>;
-	/**
-	 * Returns the access token, refreshing it first when `forceRefreshToken`
-	 * is `true`.
-	 */
-	fetchAccessToken(args: { forceRefreshToken: boolean }): Promise<string | null>;
-};
-
 /**
- * Hook an {@link AuthClient} into Svelte and the Convex client, and provide
- * the context of the method helpers.
+ * Hook an {@link AuthClient} into Svelte and the Convex client, and set the
+ * context of the hooks and method helpers.
  *
  * Must be called during component initialization.
  */
@@ -102,7 +74,7 @@ export function bindAuthClient({
 	initialToken?: string | null;
 	/** Called when the client signs in or out after it has loaded. */
 	onAuthChange?: (isAuthenticated: boolean) => void;
-}): ConvexAuth {
+}): void {
 	let snapshot = $state(authClient.getSnapshot());
 
 	// `init()` loads the session from storage (and finishes an OAuth flow that
@@ -135,9 +107,9 @@ export function bindAuthClient({
 		return await authClient.fetchAccessToken(args);
 	};
 
-	// The server rendered signed in when it had a token. Seeding convex-svelte
-	// with that keeps the hydrated page from flashing signed out while the
-	// client loads the session.
+	// The counterpart of `ConvexProviderWithAuth`. When the server rendered
+	// signed in, seeding convex-svelte with that keeps the hydrated page from
+	// flashing signed out while the client loads the session.
 	setupAuth(
 		() => ({
 			isLoading: snapshot.isLoading,
@@ -148,10 +120,10 @@ export function bindAuthClient({
 	);
 	const convexAuth = useConvexAuth();
 
-	// Watch the app's `isAuthenticated` query while the backend accepts the
-	// token. When the session is revoked server-side (a sign-out elsewhere, a
-	// password reset), the query flips to `false` and this client signs out
-	// right away instead of at the next failed refresh.
+	// The counterpart of upstream's `SessionWatcher`: watch the app's
+	// `isAuthenticated` query while the backend accepts the token. When the
+	// session is revoked server-side, the query flips to `false` and the client
+	// signs out right away instead of at the next failed refresh.
 	const session = useQuery(isAuthenticated, () => (convexAuth.isAuthenticated ? {} : 'skip'));
 	$effect(() => {
 		if (session.data === false) {
@@ -159,7 +131,7 @@ export function bindAuthClient({
 		}
 	});
 
-	const context: ConvexAuthContext = {
+	setContext<ConvexAuthContext>(CONTEXT_KEY, {
 		authClient,
 		signInApi,
 		mutation: (fn, args) => convex.mutation(fn, args),
@@ -175,51 +147,50 @@ export function bindAuthClient({
 				return snapshot.token;
 			}
 		}
-	};
-	setContext(CONTEXT_KEY, context);
-
-	return authFromContext(context, convexAuth);
+	});
 }
 
-/** Build the public {@link ConvexAuth} view of a context. */
-export function authFromContext(
-	context: ConvexAuthContext,
-	convexAuth: { readonly isLoading: boolean; readonly isAuthenticated: boolean }
-): ConvexAuth {
-	const { authClient } = context;
-	return {
-		get isLoading() {
-			return context.clientState.isLoading || convexAuth.isLoading;
-		},
-		get isAuthenticated() {
-			return convexAuth.isAuthenticated;
-		},
-		get token() {
-			return context.clientState.token;
-		},
-		signOut: () => authClient.signOut(),
-		setSession: (session) => authClient.setSession(session),
-		fetchAccessToken: (args) => authClient.fetchAccessToken(args)
-	};
+/** The value returned by {@link useAuthActions}. */
+export type ConvexAuthActionsContextType = {
+	/**
+	 * Adopt a session. The method helpers call it for you; use it for a
+	 * sign-in function you call yourself. A SPA client receives a full
+	 * {@link TokenBundle}, a SvelteKit client the {@link SlimTokenBundle}
+	 * without the refresh token.
+	 */
+	setSession: (session: TokenBundle | SlimTokenBundle) => Promise<void>;
+	/** Sign out: revoke the session on the server and clear it locally. */
+	signOut: () => Promise<void>;
+};
+
+/**
+ * Access the auth actions. Call during component initialization.
+ *
+ * ```ts
+ * const { setSession, signOut } = useAuthActions();
+ * ```
+ *
+ * For the auth state, use `useAuth()` from `convex-svelte`, the counterpart of
+ * `useConvexAuth()` from `convex/react`.
+ */
+export function useAuthActions(): ConvexAuthActionsContextType {
+	const { authClient } = getConvexAuthContext('useAuthActions()');
+	return { setSession: authClient.setSession, signOut: authClient.signOut };
 }
 
 /**
- * The auth state and actions. Call during the initialization of a component
- * below the one that calls `setupConvexAuth`.
+ * The current access token (a JWT), or `null` when signed out. Call during
+ * component initialization, and read `current`, which stays reactive.
  *
- * Read the properties (don't destructure `isLoading`, `isAuthenticated` or
- * `token`), so they stay reactive:
- *
- * ```svelte
- * <script>
- *   const auth = useAuth();
- * </script>
- *
- * {#if auth.isAuthenticated}
- *   <button onclick={() => auth.signOut()}>Sign out</button>
- * {/if}
- * ```
+ * Use it to authenticate requests to your Convex HTTP actions
+ * (`Authorization: Bearer <token>`). Treat it as an ID token and don't send
+ * it to other servers.
  */
-export function useAuth(): ConvexAuth {
-	return authFromContext(getConvexAuthContext('useAuth()'), useConvexAuth());
+export function useAuthToken(): { readonly current: string | null } {
+	const { clientState } = getConvexAuthContext('useAuthToken()');
+	return {
+		get current() {
+			return clientState.token;
+		}
+	};
 }

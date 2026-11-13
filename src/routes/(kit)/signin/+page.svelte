@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { useAuth } from '$lib/sveltekit';
+	import { useAuth } from 'convex-svelte';
 	import { useSignInWithUsernamePassword } from '$lib/methods/username-password.svelte';
 	import { useOauth, useSignInWithGithub } from '$lib/methods/github';
 	import { api } from '$lib/convex/_generated/api';

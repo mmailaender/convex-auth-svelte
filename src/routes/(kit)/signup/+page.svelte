@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { useAuth } from '$lib/sveltekit';
+	import { useAuth } from 'convex-svelte';
 	import {
 		DEFAULT_MIN_PASSWORD_LENGTH,
 		useSignUpWithUsernamePassword

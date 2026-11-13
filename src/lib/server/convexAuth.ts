@@ -1,17 +1,16 @@
-import { createConvexAuthHooks } from '$lib/sveltekit/server';
 import { PUBLIC_CONVEX_URL } from '$env/static/public';
+import { setupConvexAuthSvelteKit } from '$lib/sveltekit/server';
 import { api } from '$lib/convex/_generated/api';
 
-// Configured once, used by src/hooks.server.ts and the load functions.
-export const { handleAuth, getAuthState, isAuthenticated } = createConvexAuthHooks({
+// The SvelteKit-specific server helpers: the `handle` hook (up-front refresh
+// and redirects), the access token for the root layout, and the signed-in
+// check. The auth routes are mounted separately, from serverAuth.ts.
+export const {
+	convexAuthSvelteKitHandle,
+	convexAuthSvelteKitAccessToken,
+	isAuthenticatedSvelteKit
+} = setupConvexAuthSvelteKit({
 	convexUrl: PUBLIC_CONVEX_URL,
-	api: api.auth,
-	// Every function that signs a user in. The sign-in route refuses anything
-	// else.
-	signIn: [
-		api.auth.signInWithUsernamePassword,
-		api.auth.signUpWithUsernamePassword,
-		api.auth.completeSignInWithGithub
-	],
-	verbose: true
+	refreshSession: api.auth.refreshSession,
+	isAuthenticated: api.auth.isAuthenticated
 });

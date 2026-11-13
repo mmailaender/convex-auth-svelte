@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useQuery } from 'convex-svelte';
-	import { useAuth } from '$lib/svelte/index.svelte';
+	import { useAuth } from 'convex-svelte';
+	import { useAuthActions } from '$lib/svelte/index.svelte';
 	import {
 		useSignInWithUsernamePassword,
 		useSignUpWithUsernamePassword
@@ -8,6 +9,7 @@
 	import { api } from '$lib/convex/_generated/api';
 
 	const auth = useAuth();
+	const { signOut } = useAuthActions();
 	const login = useSignInWithUsernamePassword(api.auth);
 	const signup = useSignUpWithUsernamePassword(api.auth);
 	const viewer = useQuery(api.users.viewer, () => (auth.isAuthenticated ? {} : 'skip'));
@@ -36,7 +38,7 @@
 		<p>Loading…</p>
 	{:else if auth.isAuthenticated}
 		<p>Signed in as <strong>{viewer.data?.name ?? '…'}</strong></p>
-		<button class="btn preset-tonal" onclick={() => auth.signOut()}>Sign out</button>
+		<button class="btn preset-tonal" onclick={() => signOut()}>Sign out</button>
 	{:else}
 		<form class="flex flex-col gap-2" onsubmit={submit}>
 			<label class="label">

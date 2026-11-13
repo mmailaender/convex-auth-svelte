@@ -1,6 +1,6 @@
 # Convex Auth for Svelte
 
-Use `@mmailaender/convex-auth-svelte/svelte` to add [Convex Auth v2](https://github.com/get-convex/convex-auth) to a client-only Svelte app. The browser holds the session: the access and refresh tokens live in `localStorage`, or in the storage you pass.
+Use `@mmailaender/convex-auth-svelte/svelte` to add [Convex Auth v2](https://github.com/get-convex/convex-auth) to a client-only Svelte app. It's the counterpart of `@convex-dev/auth/react`: `setupConvexAuth` replaces `ConvexAuthProvider`, and `useAuthActions` and `useAuthToken` work the same. The browser holds the session: the access and refresh tokens live in `localStorage`, or in the storage you pass.
 
 With SvelteKit and server-side rendering, use the [SvelteKit bindings](../sveltekit/README.md) instead. They keep the refresh token in an httpOnly cookie.
 
@@ -35,29 +35,33 @@ Call `setupConvexAuth` in your root component, in place of `setupConvex`:
 {@render children()}
 ```
 
-| Option             | Default                               | Purpose                                                          |
-| ------------------ | ------------------------------------- | ---------------------------------------------------------------- |
-| `client`           | created with `setupConvex(convexUrl)` | An existing `ConvexClient`                                       |
-| `storage`          | `localStorage`, or memory without one | Where tokens are kept. `sessionStorage` gives each tab a session |
-| `storageNamespace` | `convexUrl`                           | Clients sharing a namespace share a session                      |
-| `ambientSignIns`   | `[oauth()]`                           | Sign-ins that run at startup. Include `oauth()` if you set it    |
+It takes the props of `ConvexAuthProvider`, with two differences. `client` is optional, because `convex-svelte` creates one with `setupConvex(convexUrl, clientOptions)`. `convexUrl` is required, because the `convex-svelte` client doesn't expose its URL during SSR.
+
+| Option             | Default                               | Purpose                                                                             |
+| ------------------ | ------------------------------------- | ----------------------------------------------------------------------------------- |
+| `client`           | created with `setupConvex(convexUrl)` | An existing `ConvexClient`                                                          |
+| `storage`          | `localStorage`, or memory without one | Where tokens are kept. `sessionStorage` gives each tab a session                    |
+| `storageNamespace` | `convexUrl`                           | Clients sharing a namespace share a session                                         |
+| `ambientSignIns`   | `[oauth()]`                           | Sign-ins that run at startup. Include `oauth()` from `/methods/oauth` if you set it |
 
 ## Sign in and read the state
 
-The sign-in helpers and `useAuth` work as in the [SvelteKit docs](../sveltekit/README.md#sign-in). Import `useAuth` from `@mmailaender/convex-auth-svelte/svelte`:
+The sign-in hooks are the same as with SvelteKit; see [Sign in](../sveltekit/README.md#sign-in). In a SPA, sign-in functions run on the Convex client directly, so there's no allowlist to maintain.
 
 ```svelte
 <script lang="ts">
-	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
+	import { useAuth } from 'convex-svelte';
+	import { useAuthActions } from '@mmailaender/convex-auth-svelte/svelte';
 	import { useSignInWithUsernamePassword } from '@mmailaender/convex-auth-svelte/methods/username-password';
 	import { api } from '../convex/_generated/api';
 
 	const auth = useAuth();
+	const { signOut } = useAuthActions();
 	const login = useSignInWithUsernamePassword(api.auth);
 </script>
 
 {#if auth.isAuthenticated}
-	<button onclick={() => auth.signOut()}>Sign out</button>
+	<button onclick={() => signOut()}>Sign out</button>
 {:else}
 	<button
 		disabled={login.pending}
@@ -68,4 +72,4 @@ The sign-in helpers and `useAuth` work as in the [SvelteKit docs](../sveltekit/R
 {/if}
 ```
 
-In a SPA, sign-in functions run on the Convex client directly, so there's no allowlist to maintain.
+`useAuth()` from `convex-svelte` is the counterpart of `useConvexAuth()` from `convex/react`. `useAuthToken()` returns `{ current }`, the access token or `null`.

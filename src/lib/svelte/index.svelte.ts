@@ -1,17 +1,23 @@
 /**
- * Svelte bindings for Convex Auth v2, for single-page apps.
+ * Svelte bindings for Convex Auth v2: the counterpart of
+ * `@convex-dev/auth/react`.
  *
- * The browser holds the session: the access and refresh tokens live in
- * `localStorage` (or the storage you pass). For SvelteKit with server-side
- * rendering, use `@mmailaender/convex-auth-svelte/sveltekit` instead, which
- * keeps the refresh token in an httpOnly cookie.
+ * {@link setupConvexAuth} replaces `ConvexAuthProvider`. The browser holds the
+ * session: the access and refresh tokens live in `localStorage` (or the
+ * storage you pass). For SvelteKit with server-side rendering, use
+ * `setupConvexAuthSvelteKit` from `@mmailaender/convex-auth-svelte/sveltekit`
+ * instead, which keeps the refresh token in an httpOnly cookie.
+ *
+ * {@link useAuthActions} and {@link useAuthToken} work under both. For the auth
+ * state, use `useAuth()` from `convex-svelte`, the counterpart of
+ * `useConvexAuth()` from `convex/react`.
  *
  * @module
  */
 import { ConvexHttpClient, type ConvexClient, type ConvexClientOptions } from 'convex/browser';
 import { setConvexClientContext, setupConvex } from 'convex-svelte';
 import { AuthClient, defaultStorage } from '@convex-dev/auth/browser';
-import { bindAuthClient, type ConvexAuth } from '../internal/core.svelte.js';
+import { bindAuthClient } from '../internal/core.svelte.js';
 import { oauth } from '../internal/oauthClient.js';
 import { namespacedStorage } from '../internal/storage.js';
 import type {
@@ -21,15 +27,12 @@ import type {
 	TokenStorage
 } from '../internal/types.js';
 
-export { useAuth, type ConvexAuth } from '../internal/core.svelte.js';
-export { oauth } from '../internal/oauthClient.js';
-export type {
-	AmbientSignInClient,
-	ConvexAuthApi,
-	SlimTokenBundle,
-	TokenBundle,
-	TokenStorage
-} from '../internal/types.js';
+export {
+	useAuthActions,
+	useAuthToken,
+	type ConvexAuthActionsContextType
+} from '../internal/core.svelte.js';
+export type { ConvexAuthApi, TokenBundle, TokenStorage } from '../internal/types.js';
 
 /** Options of {@link setupConvexAuth}. */
 export type SetupConvexAuthOptions = {
@@ -46,7 +49,9 @@ export type SetupConvexAuthOptions = {
 	api: ConvexAuthApi;
 	/**
 	 * An existing `ConvexClient`. If omitted, one is created with
-	 * `convex-svelte`'s `setupConvex(convexUrl, clientOptions)`.
+	 * `convex-svelte`'s `setupConvex(convexUrl, clientOptions)`. Unlike
+	 * `ConvexAuthProvider`, `convexUrl` is required either way, because the
+	 * client of `convex-svelte` doesn't expose its URL during SSR.
 	 */
 	client?: ConvexClient;
 	/** Options for the `ConvexClient` created when `client` is omitted. */
@@ -65,16 +70,16 @@ export type SetupConvexAuthOptions = {
 	/**
 	 * Advanced. Sign-in methods that run on their own at startup, like
 	 * finishing an OAuth flow. Replaces the default `[oauth()]`; include
-	 * `oauth()` yourself to keep it.
+	 * `oauth()` (from `@mmailaender/convex-auth-svelte/methods/oauth`) yourself
+	 * to keep it.
 	 */
 	ambientSignIns?: AmbientSignInClient[];
-	/** Log the refresh and lifecycle steps of the session to the console. */
-	verbose?: boolean;
 };
 
 /**
- * Set up Convex Auth in a single-page app. Call it once, in your root
- * component, in place of `setupConvex`.
+ * Set up Convex Auth in a single-page app: the counterpart of
+ * `ConvexAuthProvider`. Call it once, in your root component, in place of
+ * `setupConvex`.
  *
  * ```svelte
  * <script lang="ts">
@@ -93,11 +98,11 @@ export type SetupConvexAuthOptions = {
  * {@render children()}
  * ```
  *
- * Components below it read the state with `useAuth()` and sign in with the
- * helpers of each method, e.g. `useSignInWithUsernamePassword(api.auth)` from
+ * Components below it sign in with the helpers of each method, e.g.
+ * `useSignInWithUsernamePassword(api.auth)` from
  * `@mmailaender/convex-auth-svelte/methods/username-password`.
  */
-export function setupConvexAuth(options: SetupConvexAuthOptions): ConvexAuth {
+export function setupConvexAuth(options: SetupConvexAuthOptions): void {
 	const { convexUrl, api } = options;
 	let convex: ConvexClient;
 	if (options.client !== undefined) {
@@ -134,11 +139,10 @@ export function setupConvexAuth(options: SetupConvexAuthOptions): ConvexAuth {
 			signIns: options.ambientSignIns ?? [oauth()],
 			signInApi,
 			convex: { mutation: (fn, args) => convex.mutation(fn, args) }
-		},
-		verbose: options.verbose
+		}
 	});
 
-	return bindAuthClient({
+	bindAuthClient({
 		authClient,
 		convex,
 		signInApi,
