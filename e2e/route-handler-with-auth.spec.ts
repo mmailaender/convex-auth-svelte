@@ -1,20 +1,22 @@
 import { test, expect } from '@playwright/test';
-import { signInWithSecret, signOut } from './auth';
+import { signOut, signUp } from './auth';
 
 test('route handler returns 403 when not authenticated', async ({ page }) => {
 	const response = await page.goto('/api/');
-
-	expect(response).not.toBeNull();
 	expect(response?.status()).toBe(403);
 });
 
 test('route handler returns 200 when authenticated', async ({ page }) => {
-	await signInWithSecret(page);
-
+	await signUp(page);
 	const response = await page.goto('/api/');
-
-	expect(response).not.toBeNull();
 	expect(response?.status()).toBe(200);
-
 	await signOut(page);
+});
+
+test('auth routes refuse cross-site requests', async ({ request }) => {
+	const response = await request.post('/auth/refresh', {
+		headers: { origin: 'https://evil.example.com' },
+		data: {}
+	});
+	expect(response.status()).toBe(403);
 });

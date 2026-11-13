@@ -9,24 +9,18 @@
 	interface Props {
 		viewer: {
 			_id: Id<'users'>;
-			_creationTime: number;
-			name?: string;
-			email?: string;
-			phone?: string;
+			name: string;
 			image?: string;
-			emailVerificationTime?: number;
-			phoneVerificationTime?: number;
-			isAnonymous?: boolean;
 		};
 	}
 
 	let { viewer }: Props = $props();
 
-	const { signOut } = useAuth();
+	const auth = useAuth();
 
 	async function handleSignOut() {
-		await signOut();
-		goto('/');
+		await auth.signOut();
+		await goto('/');
 	}
 
 	let openState = $state(false);
@@ -43,7 +37,7 @@
 		ids={{ trigger: 'user-menu-trigger' }}
 	>
 		{#snippet trigger()}
-			<Avatar src={viewer.image} name={viewer.name ?? 'User'} size="size-10" />
+			<Avatar src={viewer.image} name={viewer.name} size="size-10" />
 		{/snippet}
 		{#snippet content()}
 			<div class="px-2 py-1.5 text-sm font-semibold">{viewer.name}</div>

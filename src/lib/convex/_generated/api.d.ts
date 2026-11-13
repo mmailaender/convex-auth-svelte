@@ -9,20 +9,14 @@
  */
 
 import type * as auth from '../auth.js';
-import type * as helpers from '../helpers.js';
-import type * as http from '../http.js';
 import type * as messages from '../messages.js';
-import type * as tests from '../tests.js';
 import type * as users from '../users.js';
 
 import type { ApiFromModules, FilterApi, FunctionReference } from 'convex/server';
 
 declare const fullApi: ApiFromModules<{
 	auth: typeof auth;
-	helpers: typeof helpers;
-	http: typeof http;
 	messages: typeof messages;
-	tests: typeof tests;
 	users: typeof users;
 }>;
 
@@ -46,4 +40,9 @@ export declare const api: FilterApi<typeof fullApi, FunctionReference<any, 'publ
  */
 export declare const internal: FilterApi<typeof fullApi, FunctionReference<any, 'internal'>>;
 
-export declare const components: {};
+export declare const components: {
+	auth: import('@convex-dev/auth/_generated/component.js').ComponentApi<'auth'>;
+	authPassword: import('@convex-dev/auth/components/password/_generated/component.js').ComponentApi<'authPassword'>;
+	authUsername: import('@convex-dev/auth/components/username/_generated/component.js').ComponentApi<'authUsername'>;
+	authGithub: import('@convex-dev/auth/components/github/_generated/component.js').ComponentApi<'authGithub'>;
+};

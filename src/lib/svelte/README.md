@@ -1,238 +1,71 @@
 # Convex Auth for Svelte
 
-This package provides authentication functionality for SvelteKit applications using Convex as a backend. It includes only client-side components. For server-side integration, see the [SvelteKit docs](/src/lib/sveltekit/README.md).
+Use `@mmailaender/convex-auth-svelte/svelte` to add [Convex Auth v2](https://github.com/get-convex/convex-auth) to a client-only Svelte app. The browser holds the session: the access and refresh tokens live in `localStorage`, or in the storage you pass.
 
-## Table of Contents
+With SvelteKit and server-side rendering, use the [SvelteKit bindings](../sveltekit/README.md) instead. They keep the refresh token in an httpOnly cookie.
 
-- [Installation](#installation)
-- [Setup](#setup)
-  - [1. Install dependencies](#1-install-dependencies)
-  - [2. (Optional) Initialize backend auth](#2-optional-initialize-backend-auth)
-  - [3. Initialize Auth (Client-only)](#3-initialize-auth-client-only)
-- [Usage](#usage)
-  - [Authentication UI](#authentication-ui)
-  - [Data operations (client-only)](#data-operations-client-only)
-- [API Reference](#api-reference)
-  - [setupConvexAuth](#setupconvexauth)
-  - [useAuth](#useauth)
-  - [Types](#types)
-- [Notes](#notes)
-
-## Setup
-
-This guide assumes you already have a [working Svelte (not SvelteKit) Convex app](https://docs.convex.dev/quickstart/svelte).
-
-### 1. Install dependencies
+## Install
 
 ```bash
-# npm
-npm install @mmailaender/convex-auth-svelte @convex-dev/auth @auth/core convex convex-svelte
-
-# pnpm
-pnpm add @mmailaender/convex-auth-svelte @convex-dev/auth @auth/core convex convex-svelte
-
-# yarn
-yarn add @mmailaender/convex-auth-svelte @convex-dev/auth @auth/core convex convex-svelte
+pnpm add @mmailaender/convex-auth-svelte @convex-dev/auth convex convex-svelte
 ```
 
-### 2. Run the initialization command
+Requires `@convex-dev/auth` 2.x, `convex` 1.48 or later, and `convex-svelte` 0.15 or later.
 
-```bash
-npx @convex-dev/auth
-```
+Set up the backend with upstream's [getting started guide](https://github.com/get-convex/convex-auth/blob/main/packages/docs/docs/getting-started.mdx). Export `signOut`, `refreshSession` and `isAuthenticated` from `convex/auth.ts`, so `api.auth` carries all three.
 
-This sets up your project for authenticating via the library.
+## Set up the client
 
-### 3. Add authentication tables to your schema
-
-Convex Auth assumes you have several tables set up with specific indexes.
-
-You can add these tables to your [schema](https://docs.convex.dev/database/schemas) via the authTables export:
-
-```ts
-// src/convex/schema.ts
-import { defineSchema } from 'convex/server';
-import { authTables } from '@convex-dev/auth/server';
-
-const schema = defineSchema({
-	...authTables
-	// Your other tables...
-});
-
-export default schema;
-```
-
-### 4. Initialize Auth (Client-only)
-
-Call `setupConvexAuth` early in your app (e.g., the root component), providing either a `convexUrl` or a `ConvexClient` instance.
+Call `setupConvexAuth` in your root component, in place of `setupConvex`:
 
 ```svelte
-<!-- App.svelte (or your root component) -->
-<script>
+<!-- App.svelte -->
+<script lang="ts">
 	import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/svelte';
+	import { api } from '../convex/_generated/api';
 
-	// Option A: Provide just convexUrl (recommended)
+	let { children } = $props();
+
 	setupConvexAuth({
-		convexUrl: 'https://your-deployment.convex.cloud'
+		convexUrl: import.meta.env.VITE_CONVEX_URL,
+		api: api.auth
 	});
-
-	// Option B: Provide your own ConvexClient instance
-	// import { ConvexClient } from 'convex/browser';
-	// const client = new ConvexClient('https://your-deployment.convex.cloud');
-	// setupConvexAuth({ client, convexUrl: 'https://your-deployment.convex.cloud' });
-
-	// Optional: customize storage & replaceURL
-	// setupConvexAuth({
-	//   convexUrl: 'https://your-deployment.convex.cloud',
-	//   storage: window.sessionStorage, // or any TokenStorage implementation
-	//   storageNamespace: 'my-app',
-	//   replaceURL: (relative) => window.history.replaceState({}, '', relative),
-	// });
 </script>
 
-<!-- your app -->
+{@render children()}
 ```
 
-Notes:
+| Option             | Default                               | Purpose                                                          |
+| ------------------ | ------------------------------------- | ---------------------------------------------------------------- |
+| `client`           | created with `setupConvex(convexUrl)` | An existing `ConvexClient`                                       |
+| `storage`          | `localStorage`, or memory without one | Where tokens are kept. `sessionStorage` gives each tab a session |
+| `storageNamespace` | `convexUrl`                           | Clients sharing a namespace share a session                      |
+| `ambientSignIns`   | `[oauth()]`                           | Sign-ins that run at startup. Include `oauth()` if you set it    |
 
-- If you don’t pass a `client`, `setupConvexAuth` will create one and attempt to bind it to `convex-svelte` context automatically.
-- You must provide `convexUrl` when not passing a `client`.
-- No server environment auto-detection is available in Svelte (non-Kit).
+## Sign in and read the state
 
-## Usage
-
-### Authentication UI
-
-Use `useAuth()` to read auth state and call actions:
-
-```svelte
-<script>
-	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
-
-	const auth = useAuth();
-	const isLoading = $derived(auth.isLoading);
-	const isAuthenticated = $derived(auth.isAuthenticated);
-
-	const { signIn, signOut } = auth;
-
-	function signinWithGoogle() {
-		void signIn('google');
-	}
-
-	async function signinWithEmail(email, password) {
-		await signIn('email', { email, password });
-	}
-</script>
-
-{#if isLoading}
-	<p>Loading authentication state...</p>
-{:else if isAuthenticated}
-	<h1>Welcome!</h1>
-	<button onclick={() => signOut()}>Sign out</button>
-{:else}
-	<h1>Please sign in</h1>
-	<button onclick={signinWithGoogle}>Sign in with Google</button>
-{/if}
-```
-
-You can also access the raw token when needed:
-
-```svelte
-<script>
-	const auth = useAuth();
-	const token = $derived(auth.token);
-
-	async function useToken() {
-		const t = await auth.fetchAccessToken();
-		console.log('Access token:', t);
-	}
-
-	// call useToken() when you need to attach the token to a custom request
-</script>
-```
-
-### Data operations (client-only)
-
-If you use `convex-svelte`, queries and mutations will automatically use the authenticated client you set up.
+The sign-in helpers and `useAuth` work as in the [SvelteKit docs](../sveltekit/README.md#sign-in). Import `useAuth` from `@mmailaender/convex-auth-svelte/svelte`:
 
 ```svelte
 <script lang="ts">
-	import { api } from '$convex/_generated/api'; // generated by Convex
-	import { useQuery, useConvexClient } from 'convex-svelte';
+	import { useAuth } from '@mmailaender/convex-auth-svelte/svelte';
+	import { useSignInWithUsernamePassword } from '@mmailaender/convex-auth-svelte/methods/username-password';
+	import { api } from '../convex/_generated/api';
 
-	// Example: authenticated query
-	const viewer = useQuery(api.users.viewer, {});
-
-	// Example: mutation via client
-	const client = useConvexClient();
-	let messageText = $state('');
-
-	async function sendMessage(e: Event) {
-		e.preventDefault();
-		if (messageText.trim() === '') return;
-
-		try {
-			await client.mutation(api.messages.send, { body: messageText });
-			messageText = '';
-		} catch (err) {
-			console.error('Failed to send message', err);
-		}
-	}
+	const auth = useAuth();
+	const login = useSignInWithUsernamePassword(api.auth);
 </script>
 
-{#if viewer.data}
-	<div>
-		<h2>Welcome, {viewer.data.name}!</h2>
-		<form onsubmit={sendMessage}>
-			<input type="text" bind:value={messageText} placeholder="Write a message..." />
-			<button type="submit" disabled={messageText === ''}>Send</button>
-		</form>
-	</div>
+{#if auth.isAuthenticated}
+	<button onclick={() => auth.signOut()}>Sign out</button>
+{:else}
+	<button
+		disabled={login.pending}
+		onclick={() => login.signIn({ username: 'ada', password: 'correct horse battery staple' })}
+	>
+		Sign in
+	</button>
 {/if}
 ```
 
-## API Reference
-
-### `setupConvexAuth(options)`
-
-Initializes authentication.
-
-Options:
-
-- client?: ConvexClient
-- convexUrl: string
-- storage?: TokenStorage | null
-- storageNamespace?: string
-- replaceURL?: (relativeUrl: string) => void | Promise<void>
-- options?: ConvexClientOptions
-
-Behavior:
-
-- Creates/uses a `ConvexClient`.
-- Registers an auth provider that supplies access tokens to the client.
-- Stores tokens using `TokenStorage` (defaults to `localStorage` in the browser).
-
-Returns:
-
-- The auth client instance used internally.
-
-### `useAuth()`
-
-Returns a unified auth object:
-
-- isLoading: boolean
-- isAuthenticated: boolean
-- token: string | null
-- fetchAccessToken(): Promise<string | null>
-- signIn(provider: string, params?: FormData | Record<string, any> & { redirectTo?: string; code?: string }): Promise<{ signingIn: boolean; redirect?: URL }>
-- signOut(): Promise<void>
-
-### Types
-
-- `TokenStorage`
-  - getItem(key): string | undefined | null | Promise<...>
-  - setItem(key, value): void | Promise<void>
-  - removeItem(key): void | Promise<void>
-
-- `AuthClient` (re-export)
-  - Minimal interface used internally to call Convex auth actions.
+In a SPA, sign-in functions run on the Convex client directly, so there's no allowlist to maintain.

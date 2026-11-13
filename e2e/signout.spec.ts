@@ -1,9 +1,14 @@
-import { test } from '@playwright/test';
-import { signInWithSecret } from './auth';
+import { test, expect } from '@playwright/test';
+import { signOut, signUp } from './auth';
 
-test('signout works', async ({ page }) => {
-	await signInWithSecret(page);
+test('sign-out clears the session', async ({ page, context }) => {
+	await signUp(page);
+	await signOut(page);
 
-	await page.locator('#user-menu-trigger').click();
-	await page.getByRole('button').getByText('Sign out').click();
+	const cookies = await context.cookies();
+	expect(cookies.find((c) => c.name === '__convexAuthRefreshToken')).toBeUndefined();
+
+	// The protected page is no longer reachable.
+	await page.goto('/product');
+	await page.waitForURL(/\/signin(\?.*)?$/);
 });
