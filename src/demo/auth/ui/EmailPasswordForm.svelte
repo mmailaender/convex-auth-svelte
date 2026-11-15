@@ -17,9 +17,12 @@
 
 	let {
 		mode = $bindable('signIn'),
+		view = $bindable('form'),
 		onsuccess
 	}: {
 		mode?: 'signIn' | 'signUp';
+		/** The step the form shows: the form itself, the reset request, or a sent link. */
+		view?: 'form' | 'forgot' | 'validation-sent' | 'recovery-sent';
 		/** Called once the user is signed in. */
 		onsuccess?: () => void;
 	} = $props();
@@ -28,7 +31,6 @@
 	const signUpFlow = useSignUpWithEmailPassword(api.auth);
 	const recoveryFlow = useStartPasswordRecovery(api.auth);
 
-	let view = $state<'form' | 'forgot' | 'validation-sent' | 'recovery-sent'>('form');
 	let email = $state('');
 	let password = $state('');
 	let sentTo = $state('');
@@ -154,7 +156,7 @@
 				{#if mode === 'signIn'}
 					<button
 						type="button"
-						class="anchor text-xs"
+						class="anchor text-xs whitespace-nowrap"
 						onclick={() => {
 							view = 'forgot';
 							error = null;

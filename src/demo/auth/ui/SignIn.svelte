@@ -44,6 +44,11 @@
 		].filter((tab) => typeof tab === 'object')
 	);
 
+	// The email form takes over the card while it asks for a reset link or
+	// waits for an emailed one.
+	let emailView = $state<'form' | 'forgot' | 'validation-sent' | 'recovery-sent'>('form');
+	const focused = $derived(emailView !== 'form');
+
 	let selectedTab = $state<string>();
 	const tab = $derived(selectedTab ?? tabs[0]?.value);
 
@@ -54,22 +59,29 @@
 </script>
 
 <div class={cn('flex w-full flex-col gap-7', className)}>
-	<header class="flex flex-col gap-1.5">
-		<h1 class="h4">
-			{mode === 'signUp' ? 'Create your account' : `Sign in to ${AUTH_CONFIG.brandName}`}
-		</h1>
-		<p class="text-surface-700-300 text-sm">
-			{mode === 'signUp' ? 'Pick how you want to sign in from now on.' : AUTH_CONFIG.tagline}
-		</p>
-	</header>
+	{#if emailView === 'forgot'}
+		<header class="flex flex-col gap-1.5">
+			<h1 class="h4">Reset your password</h1>
+			<p class="text-surface-700-300 text-sm">We'll email you a link to choose a new one.</p>
+		</header>
+	{:else if !focused}
+		<header class="flex flex-col gap-1.5">
+			<h1 class="h4">
+				{mode === 'signUp' ? 'Create your account' : `Sign in to ${AUTH_CONFIG.brandName}`}
+			</h1>
+			<p class="text-surface-700-300 text-sm">
+				{mode === 'signUp' ? 'Pick how you want to sign in from now on.' : AUTH_CONFIG.tagline}
+			</p>
+		</header>
+	{/if}
 
-	{#if oauthError}<Alert>{oauthError}</Alert>{/if}
+	{#if oauthError && !focused}<Alert>{oauthError}</Alert>{/if}
 
-	{#if hasSocial}
+	{#if hasSocial && !focused}
 		<SocialButtons {redirectTo} {methods} onerror={(message) => (oauthStartError = message)} />
 	{/if}
 
-	{#if hasSocial && tabs.length > 0}
+	{#if hasSocial && tabs.length > 0 && !focused}
 		<div class="flex items-center gap-3" role="separator">
 			<div class="border-surface-300-700 flex-1 border-t"></div>
 			<span class="text-surface-600-400 text-xs">or</span>
@@ -79,7 +91,7 @@
 
 	{#snippet form(value: string)}
 		{#if value === 'email'}
-			<EmailPasswordForm bind:mode onsuccess={onsignin} />
+			<EmailPasswordForm bind:mode bind:view={emailView} onsuccess={onsignin} />
 		{:else if value === 'username'}
 			<UsernamePasswordForm bind:mode onsuccess={onsignin} />
 		{/if}
@@ -87,11 +99,13 @@
 
 	{#if tabs.length > 1}
 		<Tabs.Root value={tab} onValueChange={(details) => (selectedTab = details.value)} class="gap-5">
-			<Tabs.List class="bg-surface-100-900 w-full p-1">
-				{#each tabs as { value, label } (value)}
-					<Tabs.Trigger {value} class="btn-sm">{label}</Tabs.Trigger>
-				{/each}
-			</Tabs.List>
+			{#if !focused}
+				<Tabs.List class="bg-surface-100-900 w-full p-1 data-[orientation=horizontal]:w-full">
+					{#each tabs as { value, label } (value)}
+						<Tabs.Trigger {value} class="btn-sm">{label}</Tabs.Trigger>
+					{/each}
+				</Tabs.List>
+			{/if}
 			{#each tabs as { value } (value)}
 				<Tabs.Content {value}>{@render form(value)}</Tabs.Content>
 			{/each}
@@ -100,7 +114,7 @@
 		{@render form(tabs[0].value)}
 	{/if}
 
-	{#if tabs.length > 0}
+	{#if tabs.length > 0 && !focused}
 		<p class="text-surface-700-300 text-center text-sm">
 			{mode === 'signUp' ? 'Already have an account?' : 'New here?'}
 			<button

@@ -132,7 +132,7 @@
 						<feature.icon class="text-primary-600-400 size-5" />
 						<h3 class="font-semibold">{feature.title}</h3>
 						<p class="text-surface-700-300 flex-1 text-sm">{feature.text}</p>
-						<code class="text-surface-600-400 truncate text-xs">{feature.code}</code>
+						<span class="text-surface-600-400 font-mono text-xs break-all">{feature.code}</span>
 					</a>
 				</li>
 			{/each}

@@ -90,39 +90,41 @@
 </script>
 
 <div class="flex flex-col gap-4">
-	<ImageCropper.Root bind:src={cropSrc} accept="image/*" onCropped={uploadAvatar}>
-		<ImageCropper.UploadTrigger>
-			<div class="relative size-20 cursor-pointer" aria-label="Change avatar">
-				<Avatar.Root class="size-20">
-					<Avatar.Image src={cropSrc || viewer.image} alt={viewer.name} />
-					<Avatar.Fallback>
-						<Avatar.Marble name={viewer.name} />
-					</Avatar.Fallback>
-				</Avatar.Root>
-				{#if uploading}
-					<div
-						class="bg-surface-50-950/70 absolute inset-0 flex items-center justify-center rounded-full"
-					>
+	<div class="w-fit">
+		<ImageCropper.Root bind:src={cropSrc} accept="image/*" onCropped={uploadAvatar}>
+			<ImageCropper.UploadTrigger>
+				<div class="relative size-20 cursor-pointer" aria-label="Change avatar">
+					<Avatar.Root class="size-20">
+						<Avatar.Image src={cropSrc || viewer.image} alt={viewer.name} />
+						<Avatar.Fallback>
+							<Avatar.Marble name={viewer.name} />
+						</Avatar.Fallback>
+					</Avatar.Root>
+					{#if uploading}
 						<div
-							class="size-6 animate-spin rounded-full border-2 border-current border-b-transparent"
-						></div>
-					</div>
-				{/if}
-				<span
-					class="preset-filled-surface-300-700 ring-surface-50-950 absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full ring-4"
-				>
-					<PencilIcon class="size-3.5" />
-				</span>
-			</div>
-		</ImageCropper.UploadTrigger>
-		<ImageCropper.Dialog>
-			<ImageCropper.Cropper cropShape="round" />
-			<ImageCropper.Controls>
-				<ImageCropper.Cancel />
-				<ImageCropper.Crop>Upload</ImageCropper.Crop>
-			</ImageCropper.Controls>
-		</ImageCropper.Dialog>
-	</ImageCropper.Root>
+							class="bg-surface-50-950/70 absolute inset-0 flex items-center justify-center rounded-full"
+						>
+							<div
+								class="size-6 animate-spin rounded-full border-2 border-current border-b-transparent"
+							></div>
+						</div>
+					{/if}
+					<span
+						class="preset-filled-surface-300-700 ring-surface-50-950 absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full ring-4"
+					>
+						<PencilIcon class="size-3.5" />
+					</span>
+				</div>
+			</ImageCropper.UploadTrigger>
+			<ImageCropper.Dialog>
+				<ImageCropper.Cropper cropShape="round" />
+				<ImageCropper.Controls>
+					<ImageCropper.Cancel />
+					<ImageCropper.Crop>Upload</ImageCropper.Crop>
+				</ImageCropper.Controls>
+			</ImageCropper.Dialog>
+		</ImageCropper.Root>
+	</div>
 
 	<div
 		class={[
