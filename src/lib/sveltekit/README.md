@@ -16,7 +16,7 @@ Requires `@convex-dev/auth` 2.x, `convex` 1.48 or later, and `convex-svelte` 0.1
 
 ## Set up the backend
 
-The Convex functions are plain Convex Auth v2, with nothing Svelte-specific. Follow upstream's [getting started guide](https://github.com/get-convex/convex-auth/blob/main/packages/docs/docs/getting-started.mdx) and the guide of each [sign-in method](https://github.com/get-convex/convex-auth/tree/main/packages/docs/docs/methods). The demo backend in [`src/lib/convex`](../convex) wires up username + password and GitHub.
+The Convex functions are plain Convex Auth v2, with nothing Svelte-specific. Follow upstream's [getting started guide](https://github.com/get-convex/convex-auth/blob/main/packages/docs/docs/getting-started.mdx) and the guide of each [sign-in method](https://github.com/get-convex/convex-auth/tree/main/packages/docs/docs/methods). The demo backend in [`src/lib/convex`](../convex) wires up username + password, username + passkey and GitHub.
 
 Export `signOut`, `refreshSession` and `isAuthenticated` from `convex/auth.ts`:
 
@@ -200,13 +200,48 @@ The helpers resolve to a result and never reject. A thrown error comes back as `
 | Upstream (`@convex-dev/auth/...`)         | Svelte (`@mmailaender/convex-auth-svelte/...`) |
 | ----------------------------------------- | ---------------------------------------------- |
 | `methods/username-password/react`         | `methods/username-password`                    |
+| `methods/username-passkey/react`          | `methods/username-passkey`                     |
 | `methods/email-password/react`            | `methods/email-password`                       |
 | `methods/google/react`, `github`, `apple` | `methods/google`, `github`, `apple`            |
 | `methods/oauth/react`                     | `methods/oauth`                                |
 
 The email link hooks (`useCompleteSignUpWithEmailPassword`, `useCompletePasswordRecovery`, `useCompleteChangeEmail`) return `{ current }` instead of the state itself, so the state stays reactive.
 
-Passkeys (`usernamePasskey`) aren't supported yet.
+### Passkeys
+
+`useSignInWithUsernamePasskey(api.auth)` runs the identifier-first flow of upstream's `usernamePasskey` method: a free username creates an account with a new passkey, and a taken one asks for that account's passkey. Add `finishSignUpWithUsernamePasskey` and `finishSignInWithUsernamePasskey` to the `signIn` list of `setupConvexAuthServer`. The other passkey functions run on the Convex client and aren't listed.
+
+```svelte
+<script lang="ts">
+	import { useSignInWithUsernamePasskey } from '@mmailaender/convex-auth-svelte/methods/username-passkey';
+	import { api } from '$convex/_generated/api';
+
+	const login = useSignInWithUsernamePasskey(api.auth);
+	let username = $state('');
+	let error = $state<string | null>(null);
+
+	async function onsubmit(event: SubmitEvent) {
+		event.preventDefault();
+		const result = await login.signIn({ username });
+		// ALREADY_PENDING means an earlier attempt still has its dialog open.
+		if (result.status === 'error' && result.userError.error !== 'ALREADY_PENDING') {
+			error = result.userError.error; // e.g. CEREMONY_ABORTED, USERNAME_TOO_SHORT
+		}
+	}
+</script>
+
+<form {onsubmit}>
+	<input autocomplete="username webauthn" required bind:value={username} disabled={login.pending} />
+	{#if error}<p role="alert">{error}</p>{/if}
+	<button disabled={login.pending}>Continue with a passkey</button>
+</form>
+```
+
+While the component is mounted, the browser also offers the stored passkeys in the autocompletion list of the username field, and picking one signs in. The field needs `autocomplete="username webauthn"` for that. The autofill request starts when the component mounts and is aborted when it's destroyed. The browser runs one at a time, so call `useSignInWithUsernamePasskey` once per page. Its failures show up in `login.autofill.lastError`, not in the result of `signIn`.
+
+For the settings page, `useAddPasskey(api.auth).addPasskey()` and `useRemovePasskey(api.auth).removePasskey(passkeyId)` run the passkey dialogs. Adding asks the user to confirm with a passkey they already have. Removing asks for a different passkey of the account, so the last one can't be removed (`LAST_PASSKEY`). Listing and renaming have no helper, as in upstream: call `useQuery(api.auth.listPasskeys, {})` and `useConvexClient().mutation(api.auth.renamePasskey, { passkeyId, name })` from `convex-svelte`.
+
+The backend's `origin` must list every origin the app is served from, including the port: the demo lists `http://localhost:5173` for `vite dev` and `http://localhost:4173` for `vite preview`. The demo's [`/passkey` page](../../routes/%28kit%29/passkey/+page.svelte) shows the whole flow.
 
 ### OAuth
 
