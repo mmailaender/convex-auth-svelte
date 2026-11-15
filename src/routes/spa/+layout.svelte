@@ -2,6 +2,7 @@
 	import { setupConvexAuth } from '$lib/svelte/index.svelte';
 	import { PUBLIC_CONVEX_URL } from '$env/static/public';
 	import { api } from '$lib/convex/_generated/api';
+	import AppShell from '$demo/ui/AppShell.svelte';
 
 	let { children } = $props();
 
@@ -9,4 +10,6 @@
 	setupConvexAuth({ convexUrl: PUBLIC_CONVEX_URL, api: api.auth });
 </script>
 
-{@render children()}
+<AppShell mode="spa" signInHref="/spa">
+	{@render children()}
+</AppShell>

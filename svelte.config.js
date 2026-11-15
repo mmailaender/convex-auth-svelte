@@ -8,7 +8,11 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter()
+		adapter: adapter(),
+		alias: {
+			// The UI of the demo app. It isn't part of the published package.
+			$demo: 'src/demo'
+		}
 	}
 };
 

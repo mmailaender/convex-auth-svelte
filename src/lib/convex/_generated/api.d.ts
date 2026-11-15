@@ -9,6 +9,7 @@
  */
 
 import type * as auth from '../auth.js';
+import type * as emails from '../emails.js';
 import type * as messages from '../messages.js';
 import type * as users from '../users.js';
 
@@ -16,6 +17,7 @@ import type { ApiFromModules, FilterApi, FunctionReference } from 'convex/server
 
 declare const fullApi: ApiFromModules<{
 	auth: typeof auth;
+	emails: typeof emails;
 	messages: typeof messages;
 	users: typeof users;
 }>;
@@ -42,7 +44,12 @@ export declare const internal: FilterApi<typeof fullApi, FunctionReference<any, 
 
 export declare const components: {
 	auth: import('@convex-dev/auth/_generated/component.js').ComponentApi<'auth'>;
-	authPassword: import('@convex-dev/auth/components/password/_generated/component.js').ComponentApi<'authPassword'>;
 	authUsername: import('@convex-dev/auth/components/username/_generated/component.js').ComponentApi<'authUsername'>;
+	authPassword: import('@convex-dev/auth/components/password/_generated/component.js').ComponentApi<'authPassword'>;
+	authEmailPassword: import('@convex-dev/auth/components/password/_generated/component.js').ComponentApi<'authEmailPassword'>;
+	authEmail: import('@convex-dev/auth/components/email/_generated/component.js').ComponentApi<'authEmail'>;
+	resend: import('@convex-dev/resend/_generated/component.js').ComponentApi<'resend'>;
 	authGithub: import('@convex-dev/auth/components/github/_generated/component.js').ComponentApi<'authGithub'>;
+	authGoogle: import('@convex-dev/auth/components/google/_generated/component.js').ComponentApi<'authGoogle'>;
+	authApple: import('@convex-dev/auth/components/apple/_generated/component.js').ComponentApi<'authApple'>;
 };

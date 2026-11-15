@@ -1,57 +1,44 @@
+<!--
+	The client-only variant: `ssr = false`, and `setupConvexAuth` instead of the
+	SvelteKit bindings. The components are the same.
+-->
 <script lang="ts">
-	import { useQuery } from 'convex-svelte';
-	import { useAuth } from 'convex-svelte';
-	import { useAuthActions } from '$lib/svelte/index.svelte';
-	import {
-		useSignInWithUsernamePassword,
-		useSignUpWithUsernamePassword
-	} from '$lib/methods/username-password.svelte';
+	import { page } from '$app/state';
+	import { useAuth, useQuery } from 'convex-svelte';
 	import { api } from '$lib/convex/_generated/api';
+	import { METHOD_LABELS } from '$demo/auth/config.js';
+	import SignIn from '$demo/auth/ui/SignIn.svelte';
+	import AuthPage from '$demo/ui/AuthPage.svelte';
+	import { setProfileDialog } from '$demo/users/ui/profileDialog.js';
 
 	const auth = useAuth();
-	const { signOut } = useAuthActions();
-	const login = useSignInWithUsernamePassword(api.auth);
-	const signup = useSignUpWithUsernamePassword(api.auth);
 	const viewer = useQuery(api.users.viewer, () => (auth.isAuthenticated ? {} : 'skip'));
-
-	let username = $state('');
-	let password = $state('');
-	let error = $state<string | null>(null);
-
-	async function submit(event: SubmitEvent) {
-		event.preventDefault();
-		error = null;
-		const action = (event.submitter as HTMLButtonElement | null)?.value;
-		const result =
-			action === 'signUp'
-				? await signup.signUp({ username, password })
-				: await login.signIn({ username, password });
-		if (result.status === 'error') {
-			error = result.userError.error;
-		}
-	}
 </script>
 
-<main class="mx-auto flex min-h-screen w-80 flex-col justify-center gap-4">
-	<h2 class="text-2xl font-semibold tracking-tight">Single-page app</h2>
-	{#if auth.isLoading}
-		<p>Loading…</p>
-	{:else if auth.isAuthenticated}
-		<p>Signed in as <strong>{viewer.data?.name ?? '…'}</strong></p>
-		<button class="btn preset-tonal" onclick={() => signOut()}>Sign out</button>
-	{:else}
-		<form class="flex flex-col gap-2" onsubmit={submit}>
-			<label class="label">
-				<span class="label-text">Username</span>
-				<input class="input" autocomplete="username" required bind:value={username} />
-			</label>
-			<label class="label">
-				<span class="label-text">Password</span>
-				<input class="input" type="password" required bind:value={password} />
-			</label>
-			{#if error}<p role="alert" class="text-error-500">{error}</p>{/if}
-			<button class="btn preset-filled" value="signIn" disabled={login.pending}>Sign in</button>
-			<button class="btn preset-tonal" value="signUp" disabled={signup.pending}>Sign up</button>
-		</form>
-	{/if}
-</main>
+{#if auth.isLoading}
+	<div class="flex flex-1 items-center justify-center">
+		<div class="placeholder h-40 w-full max-w-md animate-pulse"></div>
+	</div>
+{:else if auth.isAuthenticated}
+	<AuthPage>
+		<div class="flex flex-col gap-5">
+			<div class="flex flex-col gap-1.5">
+				<h1 class="h4">Single-page app</h1>
+				<p class="text-surface-700-300 text-sm">
+					Signed in as <strong data-testid="spa-name">{viewer.data?.name ?? '…'}</strong>
+					{#if viewer.data}with {METHOD_LABELS[viewer.data.method] ?? viewer.data.method}{/if}. This
+					session lives in localStorage, apart from the SvelteKit pages.
+				</p>
+			</div>
+			<button class="btn preset-tonal" onclick={() => setProfileDialog(page.url, true)}>
+				Open your account
+			</button>
+		</div>
+	</AuthPage>
+{:else}
+	<AuthPage>
+		<!-- Emailed links open the SvelteKit pages, whose session is separate, so
+		     email + password is left out here. -->
+		<SignIn methods={{ usernamePassword: true, github: true, google: true, apple: true }} />
+	</AuthPage>
+{/if}
