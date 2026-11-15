@@ -17,7 +17,8 @@ permissions:
 jobs:
   check:
     name: Test and lint
-    runs-on: ubuntu-latest
+    # Playwright 1.60 has no browser builds for ubuntu-latest (26.04) yet.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
