@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import AtSignIcon from '@lucide/svelte/icons/at-sign';
+	import FingerprintIcon from '@lucide/svelte/icons/fingerprint';
+	import InboxIcon from '@lucide/svelte/icons/inbox';
 	import KeyRoundIcon from '@lucide/svelte/icons/key-round';
 	import MailIcon from '@lucide/svelte/icons/mail';
 	import MonitorSmartphoneIcon from '@lucide/svelte/icons/monitor-smartphone';
@@ -31,6 +33,13 @@
 			code: 'src/demo/auth/ui/UsernamePasswordForm.svelte'
 		},
 		{
+			icon: FingerprintIcon,
+			title: 'Passkeys',
+			text: 'One username field: a new name signs up with a passkey, a known one asks for it. The browser also offers stored passkeys as you type.',
+			href: '/signin',
+			code: 'src/demo/auth/ui/PasskeyForm.svelte'
+		},
+		{
 			icon: KeyRoundIcon,
 			title: 'GitHub, Google and Apple',
 			text: 'OAuth through the Convex Auth components. The flow finishes on the page it returns to.',
@@ -40,7 +49,7 @@
 		{
 			icon: UserCogIcon,
 			title: 'Account dialog',
-			text: 'Name, avatar, email and password, with the sections that fit how the account signs in.',
+			text: 'Name, avatar, email, password and passkeys, with the sections that fit how the account signs in.',
 			href: '/?dialog=profile',
 			code: 'src/demo/users/ui/UserProfile.svelte'
 		},
@@ -57,6 +66,13 @@
 			text: 'The same components on setupConvexAuth, with the tokens in localStorage.',
 			href: '/spa',
 			code: 'src/routes/spa/+layout.svelte'
+		},
+		{
+			icon: InboxIcon,
+			title: 'Dev inbox',
+			text: 'Without a Resend API key, the emails of Convex Auth land here, links included.',
+			href: '/dev/inbox',
+			code: 'src/lib/convex/emails.ts'
 		}
 	];
 </script>
@@ -122,7 +138,7 @@
 
 	<section class="flex flex-col gap-6">
 		<h2 class="h4">What's in here</h2>
-		<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+		<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 			{#each features as feature (feature.title)}
 				<li>
 					<a
