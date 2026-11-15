@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { PASSWORD, emailedLink, fillEmailForm, openAccount, signOut, uniqueEmail } from './auth';
 
 /** Sign up with email + password and open the validation link. */
@@ -62,7 +63,7 @@ test('sign-in, and a password reset through the emailed link', async ({ page }) 
 	await page.getByRole('button', { name: 'Forgot password?' }).click();
 	await page.getByRole('textbox', { name: 'Email' }).fill(email);
 	await page.getByRole('button', { name: 'Send reset link' }).click();
-	await expect(page.getByRole('heading', { name: 'Reset your password' })).toBeVisible();
+	await expect(page.getByTestId('check-inbox')).toBeVisible();
 
 	await page.goto(await emailedLink(page, email, /Reset your password/i));
 	const newPassword = `${PASSWORD} again`;
@@ -83,7 +84,7 @@ test('change the email address from the account dialog', async ({ page }) => {
 
 	await openAccount(page);
 	const dialog = page.getByRole('dialog', { name: 'Account' });
-	await dialog.getByRole('button', { name: 'Change' }).first().click();
+	await dialog.getByRole('button', { name: 'Change', exact: true }).first().click();
 	await dialog.getByRole('textbox', { name: 'New email address' }).fill(newEmail);
 	await dialog.locator('#change-email-password').fill(PASSWORD);
 	await dialog.getByRole('button', { name: 'Send confirmation link' }).click();

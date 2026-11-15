@@ -73,3 +73,21 @@ export function passwordStrengthText(password: string, score: number | null): st
 	if (score === 3) return 'Good';
 	return 'Strong';
 }
+
+/**
+ * Wait until no password field of `form` is still waiting for the strength
+ * checker, which loads on demand. A submit in the meantime would find the
+ * field invalid and do nothing, so submit handlers await this first.
+ */
+export async function strengthChecked(form: HTMLFormElement, timeoutMs = 10_000): Promise<void> {
+	const checking = () =>
+		Array.from(form.elements).some(
+			(element) =>
+				element instanceof HTMLInputElement &&
+				element.validationMessage === CHECKING_STRENGTH_MESSAGE
+		);
+	const deadline = Date.now() + timeoutMs;
+	while (checking() && Date.now() < deadline) {
+		await new Promise((resolve) => setTimeout(resolve, 50));
+	}
+}

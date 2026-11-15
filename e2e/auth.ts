@@ -15,7 +15,9 @@ export function uniqueEmail() {
 /** The username + password form of the sign-in card. */
 export async function fillUsernameForm(page: Page, username: string, password = PASSWORD) {
 	const tab = page.getByRole('tab', { name: 'Username' });
-	if (await tab.isVisible()) await tab.click();
+	if ((await tab.isVisible()) && (await tab.getAttribute('aria-selected')) !== 'true') {
+		await tab.click();
+	}
 	await page.getByRole('textbox', { name: 'Username' }).fill(username);
 	await page.locator('#username-password').fill(password);
 }

@@ -4,6 +4,7 @@
 	address changes once that link is opened.
 -->
 <script lang="ts">
+	import { useHydrated } from '$demo/primitives/hooks/hydrated.svelte.js';
 	import { useStartChangeEmail } from '$lib/methods/email-password.svelte';
 	import { api } from '$lib/convex/_generated/api';
 	import * as Password from '$demo/primitives/ui/password/index.js';
@@ -15,6 +16,7 @@
 
 	let { viewer }: { viewer: Viewer } = $props();
 
+	const hydrated = useHydrated();
 	const flow = useStartChangeEmail(api.auth);
 
 	let view = $state<'show' | 'edit' | 'sent'>('show');
@@ -96,7 +98,7 @@
 				<button
 					type="submit"
 					class="btn btn-sm preset-filled-primary-500 w-full"
-					disabled={flow.pending}
+					disabled={!hydrated.current || flow.pending}
 				>
 					{#if flow.pending}<Spinner />{/if}
 					Send confirmation link

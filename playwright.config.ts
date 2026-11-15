@@ -17,7 +17,11 @@ export default defineConfig({
 		port,
 		reuseExistingServer: !process.env.CI
 	},
+	// Every sign-up hashes a password with Argon2id on the backend, which
+	// takes a while when the workers sign up at once.
+	expect: { timeout: 15_000 },
 	use: {
+		trace: 'retain-on-failure',
 		baseURL: `http://localhost:${port}`
 	},
 	testDir: 'e2e'

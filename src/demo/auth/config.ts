@@ -11,6 +11,7 @@ export const AUTH_CONFIG = {
 	methods: {
 		emailPassword: true,
 		usernamePassword: true,
+		usernamePasskey: true,
 		github: true,
 		google: true,
 		apple: true
@@ -21,7 +22,13 @@ export const AUTH_CONFIG = {
 } as const;
 
 /** The sign-in methods a user can have. Each account has exactly one. */
-export type SignInMethod = 'emailPassword' | 'usernamePassword' | 'github' | 'google' | 'apple';
+export type SignInMethod =
+	| 'emailPassword'
+	| 'usernamePassword'
+	| 'usernamePasskey'
+	| 'github'
+	| 'google'
+	| 'apple';
 
 export const METHOD_LABELS: Record<string, string> = {
 	emailPassword: 'Email and password',

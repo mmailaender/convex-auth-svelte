@@ -57,7 +57,8 @@ const MESSAGES: Messages = {
 	// Passkeys
 	CEREMONY_ABORTED: 'The passkey prompt was closed. Try again.',
 	WEBAUTHN_UNSUPPORTED: "This browser doesn't support passkeys.",
-	PASSKEY_ALREADY_REGISTERED: 'This device already holds a passkey for this site. Sign in with it instead.',
+	PASSKEY_ALREADY_REGISTERED:
+		'This device already holds a passkey for this site. Sign in with it instead.',
 	CHALLENGE_EXPIRED: 'The passkey prompt stayed open too long. Try again.',
 	UNKNOWN_CREDENTIAL: "This passkey isn't registered here.",
 	PROTOCOL_ERROR: "This passkey request couldn't be verified. Try again.",

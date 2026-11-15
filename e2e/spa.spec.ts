@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { fillUsernameForm, openAccountMenu, uniqueUsername } from './auth';
 
 test('single-page app: sign up, reload, sign out, sign in', async ({ page, context }) => {

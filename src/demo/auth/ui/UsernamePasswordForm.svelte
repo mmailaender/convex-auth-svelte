@@ -1,5 +1,7 @@
 <!-- Username + password: sign in, or create an account, which signs in right away. -->
 <script lang="ts">
+	import { strengthChecked } from '$demo/primitives/utils/passwordStrength.js';
+	import { useHydrated } from '$demo/primitives/hooks/hydrated.svelte.js';
 	import {
 		useSignInWithUsernamePassword,
 		useSignUpWithUsernamePassword
@@ -19,6 +21,7 @@
 		onsuccess?: () => void;
 	} = $props();
 
+	const hydrated = useHydrated();
 	const signInFlow = useSignInWithUsernamePassword(api.auth);
 	const signUpFlow = useSignUpWithUsernamePassword(api.auth);
 
@@ -36,6 +39,7 @@
 	async function submit(event: SubmitEvent) {
 		event.preventDefault();
 		const form = event.currentTarget as HTMLFormElement;
+		await strengthChecked(form);
 		if (!form.checkValidity()) {
 			form.querySelector<HTMLElement>(':invalid')?.focus();
 			return;
@@ -91,7 +95,11 @@
 		{/key}
 	</div>
 	{#if error}<Alert>{error}</Alert>{/if}
-	<button type="submit" class="btn preset-filled-primary-500 w-full" disabled={pending}>
+	<button
+		type="submit"
+		class="btn preset-filled-primary-500 w-full"
+		disabled={!hydrated.current || pending}
+	>
 		{#if pending}<Spinner />{/if}
 		{mode === 'signUp' ? 'Create account' : 'Sign in'}
 	</button>

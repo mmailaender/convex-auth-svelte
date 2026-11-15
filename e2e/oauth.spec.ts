@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test('starting a GitHub sign-in redirects to GitHub', async ({ page }) => {
 	await page.route('https://github.com/**', (route) =>

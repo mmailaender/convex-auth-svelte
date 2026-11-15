@@ -12,6 +12,7 @@
 	import EmailPasswordForm from './EmailPasswordForm.svelte';
 	import SocialButtons from './SocialButtons.svelte';
 	import UsernamePasswordForm from './UsernamePasswordForm.svelte';
+	import PasskeyForm from './PasskeyForm.svelte';
 
 	let {
 		mode = $bindable('signIn'),
@@ -40,7 +41,8 @@
 	const tabs = $derived(
 		[
 			methods.emailPassword && { value: 'email', label: 'Email' },
-			methods.usernamePassword && { value: 'username', label: 'Username' }
+			methods.usernamePassword && { value: 'username', label: 'Username' },
+			methods.usernamePasskey && { value: 'passkey', label: 'Passkey' }
 		].filter((tab) => typeof tab === 'object')
 	);
 
@@ -94,6 +96,8 @@
 			<EmailPasswordForm bind:mode bind:view={emailView} onsuccess={onsignin} />
 		{:else if value === 'username'}
 			<UsernamePasswordForm bind:mode onsuccess={onsignin} />
+		{:else if value === 'passkey'}
+			<PasskeyForm onsuccess={onsignin} />
 		{/if}
 	{/snippet}
 

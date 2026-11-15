@@ -10,6 +10,7 @@
 	import SignOutButton from '$demo/auth/ui/SignOutButton.svelte';
 	import ChangeEmail from './ChangeEmail.svelte';
 	import ChangePassword from './ChangePassword.svelte';
+	import Passkeys from './Passkeys.svelte';
 	import ProfileInfo from './ProfileInfo.svelte';
 	import type { Viewer } from './viewer.js';
 
@@ -44,7 +45,7 @@
 		<div class="flex flex-col gap-3">
 			{#if viewer.method === 'emailPassword'}
 				<ChangeEmail {viewer} />
-			{:else if viewer.method === 'usernamePassword'}
+			{:else if viewer.method === 'usernamePassword' || viewer.method === 'usernamePasskey'}
 				<div class="border-surface-300-700 rounded-container border px-3.5 py-2">
 					<span class="text-surface-600-400 text-xs">Username</span>
 					<p class="text-sm" data-testid="profile-username">{viewer.username}</p>
@@ -68,6 +69,16 @@
 			{/if}
 		</div>
 	</section>
+
+	{#if viewer.method === 'usernamePasskey'}
+		<section class="flex flex-col gap-4">
+			{@render section(
+				'Passkeys',
+				'Sign in with any of these. Keep more than one, in case you lose a device.'
+			)}
+			<Passkeys />
+		</section>
+	{/if}
 
 	<section class="border-surface-300-700 flex items-center justify-between gap-4 border-t pt-6">
 		{@render section('Session', 'Sign out of this browser.')}

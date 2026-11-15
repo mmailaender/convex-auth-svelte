@@ -3,6 +3,8 @@
 	password first, and can sign out every other session at the same time.
 -->
 <script lang="ts">
+	import { strengthChecked } from '$demo/primitives/utils/passwordStrength.js';
+	import { useHydrated } from '$demo/primitives/hooks/hydrated.svelte.js';
 	import { toast } from 'svelte-sonner';
 	import { useConvexClient } from 'convex-svelte';
 	import { api } from '$lib/convex/_generated/api';
@@ -14,6 +16,7 @@
 
 	let { viewer }: { viewer: Viewer } = $props();
 
+	const hydrated = useHydrated();
 	const client = useConvexClient();
 
 	let open = $state(false);
@@ -33,6 +36,7 @@
 	async function submit(event: SubmitEvent) {
 		event.preventDefault();
 		const form = event.currentTarget as HTMLFormElement;
+		await strengthChecked(form);
 		if (!form.checkValidity()) {
 			form.querySelector<HTMLElement>(':invalid')?.focus();
 			return;
@@ -138,7 +142,7 @@
 				<button
 					type="submit"
 					class="btn btn-sm preset-filled-primary-500 w-full"
-					disabled={pending}
+					disabled={!hydrated.current || pending}
 				>
 					{#if pending}<Spinner />{/if}
 					Change password

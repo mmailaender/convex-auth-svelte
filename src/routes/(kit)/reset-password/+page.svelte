@@ -1,5 +1,7 @@
 <!-- Opened from the password reset email. Sets a new password and signs the user in. -->
 <script lang="ts">
+	import { strengthChecked } from '$demo/primitives/utils/passwordStrength.js';
+	import { useHydrated } from '$demo/primitives/hooks/hydrated.svelte.js';
 	import { page } from '$app/state';
 	import { useCompletePasswordRecovery } from '$lib/methods/email-password.svelte';
 	import { api } from '$lib/convex/_generated/api';
@@ -10,6 +12,7 @@
 	import AuthPage from '$demo/ui/AuthPage.svelte';
 	import LinkStatus from '$demo/ui/LinkStatus.svelte';
 
+	const hydrated = useHydrated();
 	const recovery = useCompletePasswordRecovery(api.auth, {
 		emailCode: page.url.searchParams.get('code') ?? ''
 	});
@@ -21,6 +24,7 @@
 	async function submit(event: SubmitEvent) {
 		event.preventDefault();
 		const form = event.currentTarget as HTMLFormElement;
+		await strengthChecked(form);
 		if (link.status !== 'ready') return;
 		if (!form.checkValidity()) {
 			form.querySelector<HTMLElement>(':invalid')?.focus();
@@ -59,7 +63,11 @@
 				</Password.Root>
 			</div>
 			{#if error}<Alert>{error}</Alert>{/if}
-			<button type="submit" class="btn preset-filled-primary-500 w-full" disabled={link.pending}>
+			<button
+				type="submit"
+				class="btn preset-filled-primary-500 w-full"
+				disabled={!hydrated.current || link.pending}
+			>
 				{#if link.pending}<Spinner />{/if}
 				Save password
 			</button>

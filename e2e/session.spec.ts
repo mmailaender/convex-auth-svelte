@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { decodeJwt } from 'jose';
 import { signUp } from './auth';
 

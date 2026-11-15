@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { PASSWORD, openAccount, signIn, signOut, signUp } from './auth';
 
 test('rename the account', async ({ page }) => {
@@ -19,7 +19,7 @@ test('change the password, signing out other sessions', async ({ page, browser }
 
 	await openAccount(page);
 	const dialog = page.getByRole('dialog', { name: 'Account' });
-	await dialog.getByRole('button', { name: 'Change' }).click();
+	await dialog.getByRole('button', { name: 'Change', exact: true }).click();
 	await dialog.locator('#current-password').fill(`${PASSWORD}!`);
 	const newPassword = `${PASSWORD} again`;
 	await dialog.locator('#new-password').fill(newPassword);

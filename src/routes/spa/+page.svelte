@@ -39,6 +39,14 @@
 	<AuthPage>
 		<!-- Emailed links open the SvelteKit pages, whose session is separate, so
 		     email + password is left out here. -->
-		<SignIn methods={{ usernamePassword: true, github: true, google: true, apple: true }} />
+		<SignIn
+			methods={{
+				usernamePassword: true,
+				usernamePasskey: true,
+				github: true,
+				google: true,
+				apple: true
+			}}
+		/>
 	</AuthPage>
 {/if}

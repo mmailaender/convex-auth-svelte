@@ -3,6 +3,8 @@
 	link), and request a password reset link.
 -->
 <script lang="ts">
+	import { strengthChecked } from '$demo/primitives/utils/passwordStrength.js';
+	import { useHydrated } from '$demo/primitives/hooks/hydrated.svelte.js';
 	import {
 		useSignInWithEmailPassword,
 		useSignUpWithEmailPassword,
@@ -27,6 +29,7 @@
 		onsuccess?: () => void;
 	} = $props();
 
+	const hydrated = useHydrated();
 	const signInFlow = useSignInWithEmailPassword(api.auth);
 	const signUpFlow = useSignUpWithEmailPassword(api.auth);
 	const recoveryFlow = useStartPasswordRecovery(api.auth);
@@ -48,6 +51,7 @@
 	async function submit(event: SubmitEvent) {
 		event.preventDefault();
 		const form = event.currentTarget as HTMLFormElement;
+		await strengthChecked(form);
 		if (!form.checkValidity()) {
 			form.querySelector<HTMLElement>(':invalid')?.focus();
 			return;
@@ -127,7 +131,11 @@
 		</label>
 		{#if error}<Alert>{error}</Alert>{/if}
 		<div class="flex flex-col gap-2">
-			<button type="submit" class="btn preset-filled-primary-500 w-full" disabled={pending}>
+			<button
+				type="submit"
+				class="btn preset-filled-primary-500 w-full"
+				disabled={!hydrated.current || pending}
+			>
 				{#if recoveryFlow.pending}<Spinner />{/if}
 				Send reset link
 			</button>
@@ -187,7 +195,11 @@
 			{/key}
 		</div>
 		{#if error}<Alert>{error}</Alert>{/if}
-		<button type="submit" class="btn preset-filled-primary-500 w-full" disabled={pending}>
+		<button
+			type="submit"
+			class="btn preset-filled-primary-500 w-full"
+			disabled={!hydrated.current || pending}
+		>
 			{#if pending}<Spinner />{/if}
 			{mode === 'signUp' ? 'Create account' : 'Sign in'}
 		</button>
