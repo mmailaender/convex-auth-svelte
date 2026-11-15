@@ -73,6 +73,11 @@
 			"svelte": "./dist/methods/email-password.svelte.js",
 			"default": "./dist/methods/email-password.svelte.js"
 		},
+		"./methods/username-passkey": {
+			"types": "./dist/methods/username-passkey.svelte.d.ts",
+			"svelte": "./dist/methods/username-passkey.svelte.js",
+			"default": "./dist/methods/username-passkey.svelte.js"
+		},
 		"./methods/oauth": {
 			"types": "./dist/methods/oauth.d.ts",
 			"svelte": "./dist/methods/oauth.js",
