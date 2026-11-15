@@ -1,0 +1,8 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "@mmailaender/convex-auth-svelte": "0.1.4"
+  },
+  "changesets": []
+}
