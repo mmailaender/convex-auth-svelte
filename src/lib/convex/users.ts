@@ -8,6 +8,7 @@ import { internalMutation, query, type QueryCtx } from './_generated/server';
 // The union of the profiles the configured sign-in methods hand to `createUser`.
 const vMethod = v.union(
 	v.object({ name: v.literal('usernamePassword'), profile: v.object({}) }),
+	v.object({ name: v.literal('usernamePasskey'), profile: v.object({}) }),
 	v.object({ name: v.literal('github'), profile: vGithubProfile })
 );
 

@@ -2,6 +2,7 @@ import { defineApp } from 'convex/server';
 import { v } from 'convex/values';
 import auth from '@convex-dev/auth/convex.config.js';
 import authGithub from '@convex-dev/auth/components/github/convex.config.js';
+import authPasskey from '@convex-dev/auth/components/passkey/convex.config.js';
 import authPassword from '@convex-dev/auth/components/password/convex.config.js';
 import authUsername from '@convex-dev/auth/components/username/convex.config.js';
 
@@ -16,6 +17,7 @@ const app = defineApp({
 // its own components.
 app.use(auth);
 app.use(authPassword);
+app.use(authPasskey);
 app.use(authUsername);
 
 // GitHub's callback is mounted at `httpPrefix` on the deployment's site URL,
