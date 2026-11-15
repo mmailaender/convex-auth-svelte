@@ -16,7 +16,7 @@ test('the session outlives its access token', async ({ page }) => {
 	await page.waitForTimeout(ACCESS_TOKEN_TTL_MS + 5_000);
 	await page.goto('/product');
 	await expect(page).toHaveURL('/product');
-	await expect(page.locator('#user-menu-trigger')).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Open account menu' })).toBeVisible();
 
 	// Stay on the page past the next expiry: the client refreshes through the
 	// refresh route, and stays signed in.
