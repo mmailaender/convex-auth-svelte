@@ -75,7 +75,13 @@ export function bindAuthClient({
 	/** Called when the client signs in or out after it has loaded. */
 	onAuthChange?: (isAuthenticated: boolean) => void;
 }): void {
-	let snapshot = $state(authClient.getSnapshot());
+	let snapshot = $state.raw(authClient.getSnapshot());
+	// Every token refresh replaces the snapshot. The Convex client only needs
+	// to hear about sign-in and sign-out: re-running `setupAuth`'s effect on a
+	// new token calls `setAuth` again, which fetches yet another token, and
+	// so on.
+	const sessionLoading = $derived(snapshot.isLoading);
+	const signedIn = $derived(snapshot.isAuthenticated);
 
 	// `init()` loads the session from storage (and finishes an OAuth flow that
 	// redirected back). The Convex client may ask for a token before the
@@ -112,8 +118,8 @@ export function bindAuthClient({
 	// flashing signed out while the client loads the session.
 	setupAuth(
 		() => ({
-			isLoading: snapshot.isLoading,
-			isAuthenticated: snapshot.isAuthenticated,
+			isLoading: sessionLoading,
+			isAuthenticated: signedIn,
 			fetchAccessToken
 		}),
 		initialToken !== null ? { initialState: { isAuthenticated: true } } : undefined
@@ -138,10 +144,10 @@ export function bindAuthClient({
 		storage,
 		clientState: {
 			get isLoading() {
-				return snapshot.isLoading;
+				return sessionLoading;
 			},
 			get isAuthenticated() {
-				return snapshot.isAuthenticated;
+				return signedIn;
 			},
 			get token() {
 				return snapshot.token;
