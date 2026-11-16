@@ -90,7 +90,6 @@ export type SetupConvexAuthOptions = {
  *
  *   setupConvexAuth({
  *     convexUrl: CONVEX_URL, // e.g. from your bundler's env
-
  *     api: api.auth
  *   });
  * </script>

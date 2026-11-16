@@ -1,0 +1,12 @@
+@mmailaender/convex-auth-svelte is licensed under the ISC License (see LICENSE).
+
+It includes code adapted from Convex Auth (https://github.com/get-convex/convex-auth),
+Copyright Convex, Inc., licensed under the Apache License 2.0 (see LICENSE-APACHE):
+
+- src/lib/internal/oauthClient.ts and src/lib/internal/retry.ts, from
+  src/methods/oauth/client.ts of @convex-dev/auth
+- src/lib/internal/passkey/, from src/methods/username-passkey/ of @convex-dev/auth
+  (client.ts, ceremonies.ts, flows.ts, base64url.ts, management/flows.ts and react_impl.tsx)
+
+The adapted files are modified: they carry no React dependency, and the passkey
+ceremonies call navigator.credentials directly.

@@ -14,6 +14,7 @@ import type { FunctionArgs, FunctionReference, FunctionReturnType } from 'convex
 import type { AuthClient } from '@convex-dev/auth/browser';
 import type { AuthSignInApi, IsAuthenticatedFn, SlimTokenBundle, TokenBundle } from './types.js';
 import type { NamespacedStorage } from './storage.js';
+import { createAuthChangeDetector } from './authChange.js';
 
 const CONTEXT_KEY = Symbol('convex-auth-svelte');
 
@@ -76,9 +77,10 @@ export function bindAuthClient({
 	 */
 	initialToken?: string | null;
 	/**
-	 * Called when the client signs in or out after it has loaded. With SSR,
-	 * also when it finishes loading in a different state than the server
-	 * rendered, e.g. after redeeming an OAuth code.
+	 * Called when the client signs in, signs out or switches to another
+	 * session after it has loaded. With SSR, also when it finishes loading in
+	 * another session than the server rendered, e.g. after redeeming an OAuth
+	 * code.
 	 */
 	onAuthChange?: (isAuthenticated: boolean) => void;
 }): void {
@@ -101,19 +103,11 @@ export function bindAuthClient({
 		// code puts the client in a pending sign-in), and tracking the reads in
 		// there would re-run this effect, which disposes the client.
 		untrack(() => {
-			// With SSR, the baseline is the state the server rendered, so a
-			// client that finishes loading in another state, e.g. after
-			// redeeming an OAuth code, reports a change. Without SSR, the first
-			// loaded state is the baseline.
-			let wasAuthenticated = initialToken === undefined ? undefined : initialToken !== null;
+			const changed = createAuthChangeDetector(initialToken);
 			const unsubscribe = authClient.subscribe(() => {
 				const next = authClient.getSnapshot();
 				snapshot = next;
-				if (next.isLoading) return;
-				if (wasAuthenticated !== undefined && wasAuthenticated !== next.isAuthenticated) {
-					onAuthChange?.(next.isAuthenticated);
-				}
-				wasAuthenticated = next.isAuthenticated;
+				if (changed(next)) onAuthChange?.(next.isAuthenticated);
 			});
 			snapshot = authClient.getSnapshot();
 			void init();
