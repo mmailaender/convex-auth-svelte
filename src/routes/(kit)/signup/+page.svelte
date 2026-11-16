@@ -5,7 +5,7 @@
 		DEFAULT_MIN_PASSWORD_LENGTH,
 		useSignUpWithUsernamePassword
 	} from '$lib/methods/username-password.svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 
 	const auth = useAuth();
 	const signup = useSignUpWithUsernamePassword(api.auth);

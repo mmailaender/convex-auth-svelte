@@ -6,7 +6,7 @@
 <script lang="ts">
 	import { useAuth, useQuery } from 'convex-svelte';
 	import { useAuthActions } from '$lib/svelte/index.svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import PasskeySignIn from './PasskeySignIn.svelte';
 	import PasskeySettings from './PasskeySettings.svelte';
 

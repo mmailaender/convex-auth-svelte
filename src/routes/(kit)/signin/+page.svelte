@@ -4,7 +4,7 @@
 	import { useAuth } from 'convex-svelte';
 	import { useSignInWithUsernamePassword } from '$lib/methods/username-password.svelte';
 	import { useOauth, useSignInWithGithub } from '$lib/methods/github';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 
 	const auth = useAuth();
 	const login = useSignInWithUsernamePassword(api.auth);

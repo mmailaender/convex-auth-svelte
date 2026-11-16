@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useSignInWithUsernamePasskey } from '$lib/methods/username-passkey.svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 
 	// While this component is mounted, the browser also offers the stored
 	// passkeys in the autocompletion list of the username field.

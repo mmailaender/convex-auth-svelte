@@ -4,7 +4,7 @@
 	import { Avatar, Popover } from '@skeletonlabs/skeleton-svelte';
 
 	import { useAuthActions } from '$lib/svelte/index.svelte';
-	import type { Id } from '$lib/convex/_generated/dataModel.js';
+	import type { Id } from '$convex/_generated/dataModel.js';
 
 	interface Props {
 		viewer: {

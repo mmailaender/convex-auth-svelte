@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { useAddPasskey, useRemovePasskey } from '$lib/methods/username-passkey.svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 
 	const client = useConvexClient();
 	const list = useQuery(api.auth.listPasskeys, {});

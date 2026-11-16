@@ -18,7 +18,7 @@ Requires `@convex-dev/auth` 2.x, `convex` 1.48 or later, and `convex-svelte` 0.1
 
 ## Set up the backend
 
-The Convex functions are plain Convex Auth v2, with nothing Svelte-specific. Follow upstream's [getting started guide](https://github.com/get-convex/convex-auth/blob/main/packages/docs/docs/getting-started.mdx) and the guide of each [sign-in method](https://github.com/get-convex/convex-auth/tree/main/packages/docs/docs/methods). The demo backend in [`src/lib/convex`](../convex) wires up username + password, username + passkey and GitHub.
+The Convex functions are plain Convex Auth v2, with nothing Svelte-specific. Follow upstream's [getting started guide](https://github.com/get-convex/convex-auth/blob/main/packages/docs/docs/getting-started.mdx) and the guide of each [sign-in method](https://github.com/get-convex/convex-auth/tree/main/packages/docs/docs/methods). The demo backend in [`src/convex`](../../convex) wires up username + password, username + passkey and GitHub.
 
 Export `signOut`, `refreshSession` and `isAuthenticated` from `convex/auth.ts`:
 

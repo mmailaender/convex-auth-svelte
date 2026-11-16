@@ -1,7 +1,7 @@
 import { dev } from '$app/environment';
 import { PUBLIC_CONVEX_URL } from '$env/static/public';
 import { setupConvexAuthServer } from '@convex-dev/auth/ssr';
-import { api } from '$lib/convex/_generated/api';
+import { api } from '$convex/_generated/api';
 
 // The framework-agnostic auth handlers from Convex Auth, configured once. The
 // routes under src/routes/auth/ mount what this returns.

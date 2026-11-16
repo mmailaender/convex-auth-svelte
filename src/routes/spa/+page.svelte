@@ -6,7 +6,7 @@
 		useSignInWithUsernamePassword,
 		useSignUpWithUsernamePassword
 	} from '$lib/methods/username-password.svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 
 	const auth = useAuth();
 	const { signOut } = useAuthActions();

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { setupConvexAuthSvelteKit } from '$lib/sveltekit';
 	import { PUBLIC_CONVEX_URL } from '$env/static/public';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 
 	let { children, data } = $props();
 

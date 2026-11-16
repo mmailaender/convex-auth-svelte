@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { convexAuthSvelteKitHandle } from '$lib/server/convexAuth';
+import { convexAuthSvelteKitHandle } from '$server/convexAuth.server';
 
 const isAuthPage = (path: string) => path === '/signin' || path === '/signup';
 const isProtectedRoute = (path: string) => path === '/product' || path.startsWith('/product/');

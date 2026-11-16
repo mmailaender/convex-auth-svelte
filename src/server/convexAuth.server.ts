@@ -1,6 +1,6 @@
 import { PUBLIC_CONVEX_URL } from '$env/static/public';
 import { setupConvexAuthSvelteKit } from '$lib/sveltekit/server';
-import { api } from '$lib/convex/_generated/api';
+import { api } from '$convex/_generated/api';
 
 // The SvelteKit-specific server helpers: the `handle` hook (up-front refresh
 // and redirects), the access token for the root layout, and the signed-in

@@ -1,6 +1,6 @@
 import { createConvexHttpClient } from 'convex-svelte/sveltekit';
 import { PUBLIC_CONVEX_URL } from '$env/static/public';
-import { api } from '$lib/convex/_generated/api.js';
+import { api } from '$convex/_generated/api.js';
 import type { PageServerLoad } from './$types';
 
 export const load = (async () => {

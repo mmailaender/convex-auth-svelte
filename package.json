@@ -19,8 +19,6 @@
 		"dist/methods",
 		"dist/svelte",
 		"dist/sveltekit",
-		"!dist/convex",
-		"!dist/demo",
 		"src/lib/internal",
 		"src/lib/methods",
 		"src/lib/svelte",
