@@ -52,6 +52,6 @@ npx convex env set SENDER_EMAIL auth@your-domain.com   # a domain verified with 
 npx convex env set SITE_URL https://your-app.com        # where the emailed links point
 ```
 
-`SITE_URL` defaults to `http://localhost:5173`.
+`SITE_URL` defaults to `http://localhost:5173`. Its domain is also the passkeys' relying party (`rpId`): a passkey only works on the domain it was made on, so set `SITE_URL` before anyone creates one.
 
 To try the email flows without a Resend account, run `npx convex env set DEV_INBOX true`. The backend then stores the emails instead of sending them, and `/dev/inbox` shows them with their links, rewritten to the origin you open it on. That's how the e2e tests read them. Anyone can read that page, links included, so never set `DEV_INBOX` on a deployment with real users. With neither `RESEND_API_KEY` nor `DEV_INBOX`, sending an email fails.

@@ -11,8 +11,12 @@
 </script>
 
 {#if viewer.data}
-	<div class="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-6 sm:px-6">
-		<div class="border-surface-200-800 rounded-container flex min-h-0 flex-1 flex-col border">
+	<!-- As tall as the viewport below the header (h-16 plus its border), so
+	     the message list scrolls and the composer stays in view. -->
+	<div class="mx-auto flex h-[calc(100dvh-4rem-1px)] w-full max-w-3xl flex-col px-4 py-6 sm:px-6">
+		<div
+			class="border-surface-200-800 rounded-container flex min-h-0 flex-1 flex-col overflow-hidden border"
+		>
 			<div class="border-surface-200-800 border-b p-4">
 				<ChatIntro />
 			</div>

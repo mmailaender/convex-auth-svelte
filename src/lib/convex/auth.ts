@@ -18,6 +18,14 @@ const SITE_URL = env.SITE_URL ?? 'http://localhost:5173';
 const origins = [...new Set([SITE_URL, 'http://localhost:5173', 'http://localhost:4173'])];
 const allowedRedirectOrigins = origins;
 
+// Passkeys are bound to `rpId` for good: a passkey made on `localhost` never
+// works on another domain. The domain of SITE_URL, and the origins on it.
+const rpId = new URL(SITE_URL).hostname;
+const passkeyOrigins = origins.filter((origin) => {
+	const host = new URL(origin).hostname;
+	return host === rpId || host.endsWith(`.${rpId}`);
+});
+
 // The core owns sessions and JWT minting. The SvelteKit server proxies the
 // sign-in functions below (see src/lib/server/serverAuth.ts), so the refresh
 // token ends up in an httpOnly cookie.
@@ -98,8 +106,6 @@ export const {
 } = setupUsernamePasskey(auth, {
 	component: components.authPasskey,
 	usernameComponent: components.authUsername,
-	// Passkeys are bound to `rpId` for good: a passkey made on `localhost`
-	// never works on another domain. Set your domain before you deploy.
-	rpId: 'localhost',
-	origin: origins
+	rpId,
+	origin: passkeyOrigins
 }).attachUserCallbacks(userCallbacks);

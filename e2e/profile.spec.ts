@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { PASSWORD, openAccount, signIn, signOut, signUp } from './auth';
+import { PASSWORD, fillUsernameForm, openAccount, signIn, signOut, signUp } from './auth';
 
 test('rename the account', async ({ page }) => {
 	await signUp(page);
@@ -69,5 +69,15 @@ test('upload an avatar', async ({ page }) => {
 test('the well-known change-password URL opens the account dialog', async ({ page }) => {
 	await signUp(page);
 	await page.goto('/.well-known/change-password');
+	await expect(page.getByRole('dialog', { name: 'Account' })).toBeVisible();
+});
+
+test('signed out, the well-known change-password URL asks to sign in first', async ({ page }) => {
+	const username = await signUp(page);
+	await signOut(page);
+	await page.goto('/.well-known/change-password');
+	await expect(page).toHaveURL(/\/signin\?/);
+	await fillUsernameForm(page, username);
+	await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 	await expect(page.getByRole('dialog', { name: 'Account' })).toBeVisible();
 });
