@@ -1,30 +1,17 @@
-import { sequence } from '@sveltejs/kit/hooks';
-import { createConvexAuthHooks, createRouteMatcher } from '$lib/sveltekit/server';
-import { PUBLIC_CONVEX_URL } from '$env/static/public';
-import { redirect, type Handle } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
+import { convexAuthSvelteKitHandle } from '$server/convexAuth.server';
 
-const isSignInPage = createRouteMatcher('/signin');
-const isProtectedRoute = createRouteMatcher(['/product{/*rest}']);
+const isAuthPage = (path: string) => path === '/signin' || path === '/signup';
+const isProtectedRoute = (path: string) => path === '/product' || path.startsWith('/product/');
 
-const { handleAuth, isAuthenticated: isAuthenticatedPromise } = createConvexAuthHooks({
-	convexUrl: PUBLIC_CONVEX_URL,
-	verbose: true
-});
-
-const authFirstPattern: Handle = async ({ event, resolve }) => {
-	const isAuthenticated = await isAuthenticatedPromise(event);
-
-	if (isSignInPage(event.url.pathname) && isAuthenticated) {
+// Refreshes the session up front, so load functions see a current token, and
+// redirects based on whether the request is signed in.
+export const handle = convexAuthSvelteKitHandle(async (event, { isAuthenticated }) => {
+	const path = event.url.pathname;
+	if (isAuthPage(path) && (await isAuthenticated())) {
 		redirect(307, '/product');
 	}
-	if (isProtectedRoute(event.url.pathname) && !isAuthenticated) {
-		redirect(
-			307,
-			`/signin?redirectTo=${encodeURIComponent(event.url.pathname + event.url.search)}`
-		);
+	if (isProtectedRoute(path) && !(await isAuthenticated())) {
+		redirect(307, `/signin?redirectTo=${encodeURIComponent(path + event.url.search)}`);
 	}
-
-	return resolve(event);
-};
-
-export const handle = sequence(handleAuth, authFirstPattern);
+});

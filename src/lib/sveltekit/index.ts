@@ -1,93 +1,210 @@
 /**
- * SvelteKit bindings for Convex Auth.
+ * SvelteKit bindings for Convex Auth v2 with server-side rendering: the
+ * counterpart of `ConvexAuthNextjsProvider` from `@convex-dev/auth/ssr/nextjs`.
+ *
+ * The refresh token lives in an httpOnly cookie that only the SvelteKit
+ * server reads. Sign-in, refresh and sign-out go through the auth routes
+ * mounted from `setupConvexAuthServer` (`@convex-dev/auth/ssr`), and the
+ * browser only ever holds the short-lived access token.
+ *
+ * The hooks (`useAuthActions`, `useAuthToken`) come from
+ * `@mmailaender/convex-auth-svelte/svelte`, as they come from
+ * `@convex-dev/auth/react` under Next.js.
  *
  * @module
  */
+import { invalidateAll, replaceState } from '$app/navigation';
+import { ConvexHttpClient, type ConvexClient, type ConvexClientOptions } from 'convex/browser';
+import { setConvexClientContext, setupConvex } from 'convex-svelte';
+import { AuthClient, defaultStorage } from '@convex-dev/auth/browser';
+import { bindAuthClient } from '../internal/core.svelte.js';
+import { oauth } from '../internal/oauthClient.js';
+import { namespacedStorage } from '../internal/storage.js';
+import type {
+	AmbientSignInClient,
+	AuthSignInApi,
+	IsAuthenticatedFn,
+	SlimTokenBundle,
+	TokenStorage
+} from '../internal/types.js';
 
-import {
-	useAuth,
-	type TokenStorage,
-	type ConvexAuthActionsContext
-} from '../svelte/index.svelte.js';
-
-import { ConvexClient, type ConvexClientOptions } from 'convex/browser';
-import { createSvelteKitAuthClient } from './client.svelte.js';
-
-/**
- * Type definition for the server state
- */
-type ConvexAuthServerState = {
-	_state: { token: string | null; refreshToken: string | null };
-	_timeFetched: number;
+/** Options of {@link setupConvexAuthSvelteKit}. */
+export type SetupConvexAuthSvelteKitOptions = {
+	/**
+	 * The URL of your Convex deployment, e.g.
+	 * `https://small-mouse-123.convex.cloud`.
+	 */
+	convexUrl: string;
+	/**
+	 * The access token the page was rendered with, from
+	 * `convexAuthSvelteKitAccessToken(event)` in your root `+layout.server.ts`.
+	 * A getter, so the layout's `data` prop isn't captured at its initial
+	 * value. Read once, when the client is created.
+	 */
+	initialToken: () => string | null;
+	/**
+	 * The app's `isAuthenticated` query, as exported from `convex/auth.ts`.
+	 * Passing `api.auth` works. The client watches it, so a session revoked on
+	 * the server signs the browser out right away.
+	 */
+	api: { isAuthenticated: IsAuthenticatedFn };
+	/**
+	 * An existing `ConvexClient`. If omitted, one is created with
+	 * `convex-svelte`'s `setupConvex(convexUrl, clientOptions)`.
+	 */
+	client?: ConvexClient;
+	/** Options for the `ConvexClient` created when `client` is omitted. */
+	clientOptions?: ConvexClientOptions;
+	/** The route serving `auth.convexProxyHandler`. Defaults to `/auth/signin`. */
+	signInRoute?: string;
+	/** The route serving `auth.refreshHandler`. Defaults to `/auth/refresh`. */
+	refreshRoute?: string;
+	/** The route serving `auth.signOutHandler`. Defaults to `/auth/signout`. */
+	signOutRoute?: string;
+	/**
+	 * Where the access token is kept in the browser. Defaults to
+	 * `localStorage`. The refresh token never leaves the httpOnly cookie.
+	 */
+	storage?: TokenStorage;
+	/**
+	 * Advanced. Sign-in methods that run on their own at startup, like
+	 * finishing an OAuth flow. Replaces the default `[oauth()]`; include
+	 * `oauth()` (from `@mmailaender/convex-auth-svelte/methods/oauth`) yourself
+	 * to keep it.
+	 */
+	ambientSignIns?: AmbientSignInClient[];
+	/**
+	 * Re-run the `load` functions when the user signs in, signs out or switches
+	 * to another session, so the
+	 * server-rendered data matches the new session. Defaults to `true`.
+	 */
+	invalidateOnAuthChange?: boolean;
 };
 
 /**
- * Initialize Convex Auth for SvelteKit.
+ * POST to the refresh or sign-out route and read back the access-only
+ * session. Both routes reply with `{ tokens }` on success and failure alike,
+ * so the body is parsed regardless of status.
+ */
+async function postAuth(route: string): Promise<{ tokens: SlimTokenBundle | null }> {
+	const res = await fetch(route, {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: '{}'
+	});
+	return (await res.json().catch(() => ({ tokens: null }))) as {
+		tokens: SlimTokenBundle | null;
+	};
+}
+
+/**
+ * Strip the OAuth callback params from the URL. SvelteKit's `replaceState`
+ * keeps its router in sync, but throws before the router has started, so the
+ * plain History API is the fallback.
+ */
+function replaceUrl(url: string) {
+	try {
+		replaceState(url, {});
+	} catch {
+		window.history.replaceState(window.history.state, '', url);
+	}
+}
+
+/**
+ * Set up Convex Auth in a SvelteKit app with server-side rendering. Call it
+ * once, in your root `+layout.svelte`, in place of `setupConvex`.
  *
- * This function sets up authentication for your SvelteKit application.
- * It should be called in your root +layout.svelte file.
- *
- * @returns The auth client instance that can be used to access auth methods
- *
- * Usage:
  * ```svelte
- * <script>
- *   import { setupConvexAuth } from '@convex-dev/auth/sveltekit';
+ * <script lang="ts">
+ *   import { setupConvexAuthSvelteKit } from '@mmailaender/convex-auth-svelte/sveltekit';
+ *   import { PUBLIC_CONVEX_URL } from '$env/static/public';
+ *   import { api } from '$convex/_generated/api';
  *
- *   // Get server-side auth state (in +layout.server.ts)
- *   export let data;
+ *   let { children, data } = $props();
  *
- *   // Set up authentication (will initialize Convex client automatically)
- *   setupConvexAuth({ serverState: data.authState });
+ *   setupConvexAuthSvelteKit({
+ *     convexUrl: PUBLIC_CONVEX_URL,
+ *     initialToken: () => data.convexAuthToken,
+ *     api: api.auth
+ *   });
  * </script>
  *
  * {@render children()}
  * ```
  */
-export function setupConvexAuth({
-	client,
-	apiRoute = '/api/auth',
-	getServerState: getServerState,
-	storage = 'localStorage',
-	storageNamespace,
-	convexUrl,
-	options
-}: {
-	/**
-	 * ConvexClient instance to use. If not provided, will:
-	 * 1. Try to get it from Svelte context
-	 * 2. Initialize a new one using the Convex URL
-	 */
-	client?: ConvexClient;
-	/** API route to use for auth requests */
-	apiRoute?: string;
-	/** Server-provided authentication state */
-	getServerState: () => ConvexAuthServerState;
-	/** Storage type to use */
-	storage?: 'localStorage' | 'inMemory';
-	/** Storage namespace for auth tokens */
-	storageNamespace?: string;
-	/**
-	 * The url of your Convex deployment, often provided
-	 * by an environment variable. E.g. `https://small-mouse-123.convex.cloud`.
-	 */
-	convexUrl?: string;
-	options?: ConvexClientOptions;
-}) {
-	// Initialize the auth client with SvelteKit-specific configuration
-	return createSvelteKitAuthClient({
-		apiRoute,
-		getServerState,
-		storage,
-		client, // Pass the client to avoid re-initialization
-		convexUrl, // Pass the URL for client initialization
-		storageNamespace: storageNamespace ?? convexUrl,
-		options // Pass options to configure the client
+export function setupConvexAuthSvelteKit(options: SetupConvexAuthSvelteKitOptions): void {
+	const {
+		convexUrl,
+		signInRoute = '/auth/signin',
+		refreshRoute = '/auth/refresh',
+		signOutRoute = '/auth/signout'
+	} = options;
+	let convex: ConvexClient;
+	if (options.client !== undefined) {
+		convex = options.client;
+		setConvexClientContext(convex);
+	} else {
+		convex = setupConvex(convexUrl, options.clientOptions);
+	}
+
+	const initialToken = options.initialToken();
+
+	// Sign-in goes to the auth proxy route, which forwards the call to the
+	// deployment and moves the minted refresh token into an httpOnly cookie.
+	// It speaks the `ConvexHttpClient` wire format, so the client is a real one
+	// aimed at the app. The trailing `?path=` puts the endpoint it appends in
+	// the query string, so the route is static.
+	const proxy = new ConvexHttpClient(`${signInRoute}?path=`, {
+		skipConvexDeploymentUrlCheck: true,
+		logger: options.clientOptions?.logger
+	});
+	// A sign-in usually runs signed out, but a function may want the current
+	// identity (e.g. to link an account), so the access token is attached per
+	// call. `authClient` is read lazily because ambient sign-ins receive
+	// `signInApi` while the client is being constructed.
+	// eslint-disable-next-line prefer-const
+	let authClient: AuthClient;
+	const withAuth = () => {
+		const token = authClient.getAccessToken();
+		if (token !== null) proxy.setAuth(token);
+		else proxy.clearAuth();
+		return proxy;
+	};
+	const signInApi: AuthSignInApi = {
+		mutation: (fn, args) => withAuth().mutation(fn, args),
+		action: (fn, args) => withAuth().action(fn, args)
+	};
+	const tokenStorage = options.storage ?? defaultStorage();
+
+	authClient = new AuthClient({
+		mode: 'ssr',
+		authApi: {
+			refreshSession: async () => (await postAuth(refreshRoute)).tokens,
+			signOut: async () => {
+				await postAuth(signOutRoute);
+			}
+		},
+		storage: tokenStorage,
+		storageNamespace: convexUrl,
+		initialAccessToken: initialToken,
+		ambientSignIns: {
+			signIns: options.ambientSignIns ?? [oauth()],
+			signInApi,
+			// Calls that mint no session, like starting an OAuth flow, go to the
+			// deployment, because the proxy refuses them.
+			convex: { mutation: (fn, args) => convex.mutation(fn, args) },
+			replaceUrl
+		}
+	});
+
+	const invalidate = options.invalidateOnAuthChange ?? true;
+	bindAuthClient({
+		authClient,
+		convex,
+		signInApi,
+		storage: namespacedStorage(tokenStorage, convexUrl),
+		isAuthenticated: options.api.isAuthenticated,
+		initialToken,
+		onAuthChange: invalidate ? () => void invalidateAll() : undefined
 	});
 }
-
-// Re-export core functionality
-export { createSvelteKitAuthClient, useAuth };
-
-// Re-export types
-export type { TokenStorage, ConvexAuthActionsContext, ConvexAuthServerState };

@@ -11,12 +11,10 @@ export default defineConfig({
 	webServer: {
 		command: 'pnpm build && pnpm preview',
 		port: 4173,
-		env: {
-			PUBLIC_E2E_TEST: 'true',
-			...(process.env.AUTH_E2E_TEST_SECRET
-				? { AUTH_E2E_TEST_SECRET: process.env.AUTH_E2E_TEST_SECRET }
-				: {})
-		}
+		reuseExistingServer: !process.env.CI
+	},
+	use: {
+		baseURL: 'http://localhost:4173'
 	},
 	testDir: 'e2e'
 });

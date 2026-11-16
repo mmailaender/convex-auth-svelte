@@ -1,25 +1,52 @@
 import { test, expect } from '@playwright/test';
+import { signIn, signOut, signUp, uniqueUsername } from './auth';
 
-test('signin fails correctly', async ({ page }) => {
+test('sign-in with an unknown username fails', async ({ page }) => {
 	await page.goto('/');
-
-	await page.getByRole('link').getByText('Get Started').first().click();
-
+	await page.getByRole('link', { name: 'Get Started' }).click();
 	await page.waitForURL('/signin');
 
-	await page
-		.getByLabel('Secret')
-		.fill("for the love of all mighty please don't set this as the secret value");
+	await page.getByLabel('Username').fill(uniqueUsername());
+	await page.getByLabel('Password').fill('correct horse battery staple');
+	await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
-	// Record the alert message
-	let message = '';
-	page.on('dialog', (dialog) => {
-		message = dialog.message();
-		void dialog.accept();
-	});
+	await expect(page.getByRole('alert')).toHaveText('No account exists with that username.');
+});
 
-	await page.getByRole('button').getByText('Sign in with secret').click();
+test('sign-up signs in, and the session survives a reload', async ({ page }) => {
+	const username = await signUp(page);
+	await expect(page.locator('#user-menu-trigger')).toBeVisible();
 
-	// Need to wait for the dialog to appear, it's async
-	await expect.poll(async () => message).toBe('Invalid secret');
+	// Server-rendered as signed in from the cookies.
+	await page.reload();
+	await expect(page).toHaveURL('/product');
+
+	await page.locator('#user-menu-trigger').click();
+	await expect(page.getByText(username)).toBeVisible();
+});
+
+test('sign-in with an existing account', async ({ page }) => {
+	const username = await signUp(page);
+	await signOut(page);
+
+	await signIn(page, username);
+	await expect(page.locator('#user-menu-trigger')).toBeVisible();
+});
+
+test('the refresh token stays in an httpOnly cookie', async ({ page, context }) => {
+	await signUp(page);
+
+	const cookies = await context.cookies();
+	const refresh = cookies.find((c) => c.name === '__convexAuthRefreshToken');
+	expect(refresh?.httpOnly).toBe(true);
+	const stored = await page.evaluate(() => JSON.stringify(window.localStorage));
+	expect(stored).not.toContain(refresh!.value);
+});
+
+test('the signed-in user can send a message', async ({ page }) => {
+	await signUp(page);
+	const body = `hello ${Date.now()}`;
+	await page.getByPlaceholder('Write a message…').fill(body);
+	await page.getByRole('button', { name: 'Send' }).click();
+	await expect(page.getByText(body)).toBeVisible();
 });

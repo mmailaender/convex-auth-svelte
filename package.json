@@ -8,17 +8,21 @@
 		"url": "git+https://github.com/mmailaender/convex-auth-svelte.git"
 	},
 	"type": "module",
+	"engines": {
+		"node": ">=20"
+	},
 	"files": [
+		"LICENSE",
+		"LICENSE-APACHE",
+		"NOTICE",
+		"dist/internal",
+		"dist/methods",
 		"dist/svelte",
 		"dist/sveltekit",
-		"!dist/**/*.test.*",
-		"!dist/**/*.spec.*",
-		"!dist/convex",
-		"!dist/demo",
+		"src/lib/internal",
+		"src/lib/methods",
 		"src/lib/svelte",
-		"src/lib/sveltekit",
-		"!src/lib/**/*.test.*",
-		"!src/lib/**/*.spec.*"
+		"src/lib/sveltekit"
 	],
 	"sideEffects": [
 		"**/*.css"
@@ -58,11 +62,46 @@
 		"./sveltekit/server": {
 			"types": "./dist/sveltekit/server/index.d.ts",
 			"import": "./dist/sveltekit/server/index.js"
+		},
+		"./methods/username-password": {
+			"types": "./dist/methods/username-password.svelte.d.ts",
+			"svelte": "./dist/methods/username-password.svelte.js",
+			"default": "./dist/methods/username-password.svelte.js"
+		},
+		"./methods/email-password": {
+			"types": "./dist/methods/email-password.svelte.d.ts",
+			"svelte": "./dist/methods/email-password.svelte.js",
+			"default": "./dist/methods/email-password.svelte.js"
+		},
+		"./methods/username-passkey": {
+			"types": "./dist/methods/username-passkey.svelte.d.ts",
+			"svelte": "./dist/methods/username-passkey.svelte.js",
+			"default": "./dist/methods/username-passkey.svelte.js"
+		},
+		"./methods/oauth": {
+			"types": "./dist/methods/oauth.d.ts",
+			"svelte": "./dist/methods/oauth.js",
+			"default": "./dist/methods/oauth.js"
+		},
+		"./methods/google": {
+			"types": "./dist/methods/google.d.ts",
+			"svelte": "./dist/methods/google.js",
+			"default": "./dist/methods/google.js"
+		},
+		"./methods/github": {
+			"types": "./dist/methods/github.d.ts",
+			"svelte": "./dist/methods/github.js",
+			"default": "./dist/methods/github.js"
+		},
+		"./methods/apple": {
+			"types": "./dist/methods/apple.d.ts",
+			"svelte": "./dist/methods/apple.js",
+			"default": "./dist/methods/apple.js"
 		}
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.31.0",
-		"@convex-dev/auth": "^0.0.94",
+		"@convex-dev/auth": "^2.0.0",
 		"@playwright/test": "^1.60.0",
 		"@skeletonlabs/skeleton": "^3.2.0",
 		"@skeletonlabs/skeleton-svelte": "^1.5.1",
@@ -77,8 +116,8 @@
 		"@testing-library/svelte": "^5.3.1",
 		"@types/node": "^24.13.1",
 		"concurrently": "^10.0.3",
-		"convex": "^1.41.0",
-		"convex-svelte": "^0.13.0",
+		"convex": "^1.50.0",
+		"convex-svelte": "^0.15.1",
 		"dotenv": "^17.4.2",
 		"jose": "^6.2.3",
 		"prettier": "^3.8.4",
@@ -93,11 +132,10 @@
 		"vitest": "^4.1.8"
 	},
 	"peerDependencies": {
-		"@auth/core": "^0.37.0",
-		"@convex-dev/auth": "^0.0.87",
+		"@convex-dev/auth": "^2.0.0",
 		"@sveltejs/kit": "^2.21.0",
-		"convex": "^1.24.3",
-		"convex-svelte": "^0.0.12",
+		"convex": "^1.48.0",
+		"convex-svelte": "^0.15.0",
 		"svelte": "^5.38.5"
 	},
 	"publishConfig": {
@@ -108,10 +146,9 @@
 			"esbuild"
 		]
 	},
-	"dependencies": {
-		"cookie": "^1.1.1",
-		"is-network-error": "^1.3.2",
-		"jwt-decode": "^4.0.0",
-		"path-to-regexp": "^8.4.2"
+	"peerDependenciesMeta": {
+		"@sveltejs/kit": {
+			"optional": true
+		}
 	}
 }

@@ -1,37 +1,17 @@
 # Run the e2e tests
 
-## The mostly automated way
+The tests run the demo app (`pnpm build && pnpm preview`) against the Convex
+deployment in `.env.local`. They create their own users through the sign-up
+page, so they need no seeded data or secrets.
 
-After an `npm install`, run `npm test`.
-This tests against the most recently published official binary.
+1. Push the demo backend in `src/convex` to a dev deployment:
 
-## The more manual way
+   ```
+   npx convex env set AUTH_GITHUB_CLIENT_ID <id>      # any value works for the tests
+   npx convex env set AUTH_GITHUB_CLIENT_SECRET <secret>
+   npx convex dev --once
+   ```
 
-The following instructions require some pre-work, but once you've done the first couple steps once
-you can skip to running the test command at the end.
+   `npx convex dev` also writes `PUBLIC_CONVEX_URL` to `.env.local`.
 
-1. Clone [convex-backend](https://github.com/get-convex/convex-backend)
-
-1. Follow the instructions in its [README](https://github.com/get-convex/convex-backend/blob/main/README.md) to get it building
-
-1. From the `test-sveltekit` directory, run:
-
-```
-CONVEX_LOCAL_BACKEND_PATH=/path/to/your/convex-backend npm run test
-```
-
-## The most manual way
-
-You'll need manage your own Convex deployment to follow these instructions.
-
-1. Set up your Convex deployment for auth ([instructions](https://labs.convex.dev/auth/setup/manual))
-
-1. Create a test user
-
-   `npx convex run tests:init`
-
-1. Set up the secret on a Convex backend matching the one in `.env.test`:
-
-   `npx convex env set AUTH_E2E_TEST_SECRET <something>`
-
-1. Run `playwright test`
+1. Run `pnpm test:e2e`.
