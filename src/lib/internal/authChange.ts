@@ -9,7 +9,7 @@
 type Snapshot = { isLoading: boolean; isAuthenticated: boolean; token: string | null };
 
 /** The session id of an access token: its `sub` claim. */
-function sessionOf(token: string | null): string | null {
+export function sessionOf(token: string | null): string | null {
 	const payload = token?.split('.')[1];
 	if (!payload) return null;
 	try {

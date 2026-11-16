@@ -14,7 +14,7 @@ import type { FunctionArgs, FunctionReference, FunctionReturnType } from 'convex
 import type { AuthClient } from '@convex-dev/auth/browser';
 import type { AuthSignInApi, IsAuthenticatedFn, SlimTokenBundle, TokenBundle } from './types.js';
 import type { NamespacedStorage } from './storage.js';
-import { createAuthChangeDetector } from './authChange.js';
+import { createAuthChangeDetector, sessionOf } from './authChange.js';
 
 const CONTEXT_KEY = Symbol('convex-auth-svelte');
 
@@ -86,11 +86,13 @@ export function bindAuthClient({
 }): void {
 	let snapshot = $state.raw(authClient.getSnapshot());
 	// Every token refresh replaces the snapshot. The Convex client only needs
-	// to hear about sign-in and sign-out: re-running `setupAuth`'s effect on a
-	// new token calls `setAuth` again, which fetches yet another token, and
-	// so on.
+	// to hear about sign-in, sign-out and a switch to another session:
+	// re-running `setupAuth`'s effect on a new token calls `setAuth` again,
+	// which fetches yet another token, and so on. A refresh keeps the session
+	// id (the token's `sub`), so none of these change on it.
 	const sessionLoading = $derived(snapshot.isLoading);
 	const signedIn = $derived(snapshot.isAuthenticated);
+	const sessionId = $derived(snapshot.isAuthenticated ? sessionOf(snapshot.token) : null);
 
 	// `init()` loads the session from storage (and finishes an OAuth flow that
 	// redirected back). The Convex client may ask for a token before the
@@ -118,10 +120,17 @@ export function bindAuthClient({
 		})
 	);
 
-	const fetchAccessToken = async (args: { forceRefreshToken: boolean }) => {
-		await init();
-		return await authClient.fetchAccessToken(args);
-	};
+	// A new function per session, so `setupAuth` calls `setAuth` again when
+	// the client switches sessions (e.g. another tab signed in as someone
+	// else). Otherwise the Convex client keeps the old session's token until
+	// it expires.
+	const fetchAccessToken = $derived.by(() => {
+		void sessionId;
+		return async (args: { forceRefreshToken: boolean }) => {
+			await init();
+			return await authClient.fetchAccessToken(args);
+		};
+	});
 
 	// The counterpart of `ConvexProviderWithAuth`. When the server rendered
 	// signed in, seeding convex-svelte with that keeps the hydrated page from
