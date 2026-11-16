@@ -58,23 +58,52 @@ export interface ConvexAuthSvelteKitHandleCtx {
 }
 
 /**
- * Inspect the request in the hook. Throw SvelteKit's `redirect()` (or return
- * a `Response`) to short-circuit; return nothing to render the page.
+ * Inspect the request in the hook. Throw SvelteKit's `redirect()` or return a
+ * `Response` to short-circuit; return nothing to render the page. Both carry
+ * the cookies of a refreshed session. Don't throw `error()` here: SvelteKit
+ * leaves the cookies off error responses, so a refreshed session would be
+ * lost. Return a `Response` with the error status instead.
  */
 export type ConvexAuthSvelteKitHandler = (
 	event: RequestEvent,
 	ctx: ConvexAuthSvelteKitHandleCtx
 ) => Promise<Response | undefined | void> | Response | undefined | void;
 
-/** A {@link CookieStore} over SvelteKit's `event.cookies`. */
-function svelteKitCookieStore(cookies: Cookies): CookieStore {
+type CookieWrite = { name: string; value: string; options: Parameters<Cookies['set']>[2] };
+
+/**
+ * A {@link CookieStore} over SvelteKit's `event.cookies`. It also records its
+ * writes, for a `Response` that doesn't go through `resolve()`, where
+ * SvelteKit wouldn't add them.
+ */
+function svelteKitCookieStore(cookies: Cookies): CookieStore & { writes: CookieWrite[] } {
+	const writes: CookieWrite[] = [];
 	return {
+		writes,
 		// A cookie deleted earlier in this request reads back as "".
 		get: (name) => cookies.get(name) || undefined,
-		set: (name, value, options) =>
-			cookies.set(name, value, { ...options, path: options?.path ?? '/' }),
-		delete: (name, options) => cookies.delete(name, { ...options, path: options?.path ?? '/' })
+		set: (name, value, options) => {
+			const opts = { ...options, path: options?.path ?? '/' };
+			cookies.set(name, value, opts);
+			writes.push({ name, value, options: opts });
+		},
+		delete: (name, options) => {
+			const opts = { ...options, path: options?.path ?? '/' };
+			cookies.delete(name, opts);
+			writes.push({ name, value: '', options: { ...opts, maxAge: 0 } });
+		}
 	};
+}
+
+/** `response` with the recorded cookie writes added as `Set-Cookie` headers. */
+function withCookies(response: Response, cookies: Cookies, writes: CookieWrite[]): Response {
+	if (writes.length === 0) return response;
+	// The headers of a fetched or static response can be immutable.
+	const copy = new Response(response.body, response);
+	for (const { name, value, options } of writes) {
+		copy.headers.append('set-cookie', cookies.serialize(name, value, options));
+	}
+	return copy;
 }
 
 /**
@@ -134,19 +163,21 @@ export function setupConvexAuthSvelteKit(config: ConvexAuthSvelteKitConfig) {
 			if (authRoutes.has(event.url.pathname)) {
 				return resolve(event);
 			}
+			const cookies = svelteKitCookieStore(event.cookies);
 			const session = new ServerAuthSession({
 				refreshSession: (refreshToken) =>
 					httpClient.mutation(config.refreshSession, { refreshToken }),
-				cookies: svelteKitCookieStore(event.cookies),
+				cookies,
 				cookieOptions
 			});
 			const token = await session.getToken();
 			if (handler !== undefined) {
+				// A thrown `redirect()` gets the cookies from SvelteKit.
 				const response = await handler(event, {
 					isAuthenticated: () => isAuthenticatedSvelteKit(event),
 					getToken: () => session.getToken()
 				});
-				if (response) return response;
+				if (response) return withCookies(response, event.cookies, cookies.writes);
 			}
 			return withServerConvexToken(token ?? undefined, () => resolve(event));
 		};

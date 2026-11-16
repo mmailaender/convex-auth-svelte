@@ -6,7 +6,7 @@
  * state shared by all the OAuth methods, like the error of the last flow.
  *
  * Under SvelteKit, add `api.auth.completeSignInWithApple` to the `signIn`
- * list of `createConvexAuthHooks`.
+ * list of `setupConvexAuthServer`.
  *
  * @module
  */

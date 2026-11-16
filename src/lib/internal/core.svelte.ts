@@ -7,7 +7,7 @@
  *
  * @module
  */
-import { getContext, setContext } from 'svelte';
+import { getContext, setContext, untrack } from 'svelte';
 import { setupAuth, useAuth as useConvexAuth, useQuery } from 'convex-svelte';
 import type { ConvexClient } from 'convex/browser';
 import type { FunctionArgs, FunctionReference, FunctionReturnType } from 'convex/server';
@@ -61,7 +61,7 @@ export function bindAuthClient({
 	signInApi,
 	storage,
 	isAuthenticated,
-	initialToken = null,
+	initialToken,
 	onAuthChange
 }: {
 	authClient: AuthClient;
@@ -70,9 +70,16 @@ export function bindAuthClient({
 	storage: NamespacedStorage;
 	/** The app's `isAuthenticated` query, watched to sign out revoked sessions. */
 	isAuthenticated: IsAuthenticatedFn;
-	/** The access token the server rendered with (SSR only). */
+	/**
+	 * The access token the server rendered with, `null` when it rendered
+	 * signed out. SSR only: leave it out without SSR.
+	 */
 	initialToken?: string | null;
-	/** Called when the client signs in or out after it has loaded. */
+	/**
+	 * Called when the client signs in or out after it has loaded. With SSR,
+	 * also when it finishes loading in a different state than the server
+	 * rendered, e.g. after redeeming an OAuth code.
+	 */
 	onAuthChange?: (isAuthenticated: boolean) => void;
 }): void {
 	let snapshot = $state.raw(authClient.getSnapshot());
@@ -89,24 +96,33 @@ export function bindAuthClient({
 	let initPromise: Promise<void> | undefined;
 	const init = () => (initPromise ??= authClient.init());
 
-	$effect(() => {
-		let wasAuthenticated: boolean | undefined;
-		const unsubscribe = authClient.subscribe(() => {
-			snapshot = authClient.getSnapshot();
-			if (!snapshot.isLoading) {
-				if (wasAuthenticated !== undefined && wasAuthenticated !== snapshot.isAuthenticated) {
-					onAuthChange?.(snapshot.isAuthenticated);
+	$effect(() =>
+		// Run once. `init()` can notify the subscriber synchronously (an OAuth
+		// code puts the client in a pending sign-in), and tracking the reads in
+		// there would re-run this effect, which disposes the client.
+		untrack(() => {
+			// With SSR, the baseline is the state the server rendered, so a
+			// client that finishes loading in another state, e.g. after
+			// redeeming an OAuth code, reports a change. Without SSR, the first
+			// loaded state is the baseline.
+			let wasAuthenticated = initialToken === undefined ? undefined : initialToken !== null;
+			const unsubscribe = authClient.subscribe(() => {
+				const next = authClient.getSnapshot();
+				snapshot = next;
+				if (next.isLoading) return;
+				if (wasAuthenticated !== undefined && wasAuthenticated !== next.isAuthenticated) {
+					onAuthChange?.(next.isAuthenticated);
 				}
-				wasAuthenticated = snapshot.isAuthenticated;
-			}
-		});
-		snapshot = authClient.getSnapshot();
-		void init();
-		return () => {
-			unsubscribe();
-			authClient.dispose();
-		};
-	});
+				wasAuthenticated = next.isAuthenticated;
+			});
+			snapshot = authClient.getSnapshot();
+			void init();
+			return () => {
+				unsubscribe();
+				authClient.dispose();
+			};
+		})
+	);
 
 	const fetchAccessToken = async (args: { forceRefreshToken: boolean }) => {
 		await init();
@@ -122,7 +138,7 @@ export function bindAuthClient({
 			isAuthenticated: signedIn,
 			fetchAccessToken
 		}),
-		initialToken !== null ? { initialState: { isAuthenticated: true } } : undefined
+		initialToken != null ? { initialState: { isAuthenticated: true } } : undefined
 	);
 	const convexAuth = useConvexAuth();
 

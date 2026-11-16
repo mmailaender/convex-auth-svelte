@@ -7,8 +7,10 @@ With SvelteKit and server-side rendering, use the [SvelteKit bindings](../svelte
 ## Install
 
 ```bash
-pnpm add @mmailaender/convex-auth-svelte @convex-dev/auth convex convex-svelte
+pnpm add @mmailaender/convex-auth-svelte@alpha @convex-dev/auth convex convex-svelte
 ```
+
+The v2 bindings are in prerelease under the `alpha` tag. Without it, you'd get 0.1.x, which runs on Convex Auth v1.
 
 Requires `@convex-dev/auth` 2.x, `convex` 1.48 or later, and `convex-svelte` 0.15 or later.
 

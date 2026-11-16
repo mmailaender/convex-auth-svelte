@@ -7,7 +7,7 @@
  * `ambientSignIns` option, include `oauth()` yourself.
  *
  * Under SvelteKit, add each provider's `completeSignIn*` function to the
- * `signIn` list of `createConvexAuthHooks`. Its `startSignIn*` function runs on
+ * `signIn` list of `setupConvexAuthServer`. Its `startSignIn*` function runs on
  * the Convex client and is not listed.
  *
  * @module

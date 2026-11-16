@@ -5,7 +5,7 @@ import { setupUsernamePasskey } from '@convex-dev/auth/methods/username-passkey/
 import { setupUsernamePassword } from '@convex-dev/auth/methods/username-password/server';
 
 // The core owns sessions and JWT minting. The SvelteKit server proxies the
-// sign-in functions below (see src/hooks.server.ts), so the refresh token ends
+// sign-in functions below (see src/lib/server/serverAuth.ts), so the refresh token ends
 // up in an httpOnly cookie.
 const auth = setupConvexAuth({ component: components.auth });
 export const { signOut, refreshSession, isAuthenticated } = auth;
