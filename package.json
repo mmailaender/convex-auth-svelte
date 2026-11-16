@@ -9,6 +9,9 @@
 	},
 	"type": "module",
 	"files": [
+		"LICENSE",
+		"LICENSE-APACHE",
+		"NOTICE",
 		"dist/internal",
 		"dist/methods",
 		"dist/svelte",
