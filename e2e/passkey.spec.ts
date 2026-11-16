@@ -124,6 +124,21 @@ test('sign up with a passkey, sign out, and sign in with the username', async ({
 	expect(await credentialCount(cdp, authenticator)).toBe(1);
 });
 
+test('an autofill request the browser ends shows no error', async ({ page }) => {
+	// With no passkey stored, the virtual authenticator refuses the passkey
+	// form's background autofill request. The user never opened a prompt, so
+	// the form stays quiet.
+	const cdp = await enableWebAuthn(page);
+	await addAuthenticator(cdp);
+	await page.goto('/signin');
+	await expect(page.locator('form[aria-label="Sign in with a passkey"]')).toHaveAttribute(
+		'data-autofill',
+		'stopped'
+	);
+	await page.getByRole('tab', { name: 'Passkey' }).click();
+	await expect(passkeyForm(page).getByRole('alert')).toHaveCount(0);
+});
+
 test('passkey autofill signs in without a username', async ({ page }) => {
 	const cdp = await enableWebAuthn(page);
 	await addAuthenticator(cdp);

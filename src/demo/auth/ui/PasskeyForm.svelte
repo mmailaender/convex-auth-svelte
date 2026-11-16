@@ -30,10 +30,13 @@
 		});
 	}
 
-	// Autofill failures show where the form's own errors do.
+	// Autofill failures show where the form's own errors do, except an aborted
+	// request: the user never opened a prompt, so there's nothing to tell them.
+	// The browser refuses the background request, or another passkey prompt
+	// took its place, and autofill stops for this page.
 	$effect(() => {
 		const lastError = passkey.autofill.lastError;
-		if (lastError) error = describe(lastError);
+		if (lastError && lastError.error !== 'CEREMONY_ABORTED') error = describe(lastError);
 	});
 
 	async function submit(event: SubmitEvent) {
