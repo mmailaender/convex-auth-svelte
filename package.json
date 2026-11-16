@@ -8,6 +8,9 @@
 		"url": "git+https://github.com/mmailaender/convex-auth-svelte.git"
 	},
 	"type": "module",
+	"engines": {
+		"node": ">=20"
+	},
 	"files": [
 		"LICENSE",
 		"LICENSE-APACHE",
@@ -16,16 +19,12 @@
 		"dist/methods",
 		"dist/svelte",
 		"dist/sveltekit",
-		"!dist/**/*.test.*",
-		"!dist/**/*.spec.*",
 		"!dist/convex",
 		"!dist/demo",
 		"src/lib/internal",
 		"src/lib/methods",
 		"src/lib/svelte",
-		"src/lib/sveltekit",
-		"!src/lib/**/*.test.*",
-		"!src/lib/**/*.spec.*"
+		"src/lib/sveltekit"
 	],
 	"sideEffects": [
 		"**/*.css"

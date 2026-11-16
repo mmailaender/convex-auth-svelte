@@ -60,9 +60,10 @@ export interface ConvexAuthSvelteKitHandleCtx {
 /**
  * Inspect the request in the hook. Throw SvelteKit's `redirect()` or return a
  * `Response` to short-circuit; return nothing to render the page. Both carry
- * the cookies of a refreshed session, as does a `Response` from a later hook. Don't throw `error()` here: SvelteKit
- * leaves the cookies off error responses, so a refreshed session would be
- * lost. Return a `Response` with the error status instead.
+ * the cookies of a refreshed session, as does a `Response` from a later hook.
+ * Don't throw `error()` here or in a later hook: SvelteKit leaves the cookies
+ * off error responses, so a refreshed session would be lost. Return a
+ * `Response` with the error status instead.
  */
 export type ConvexAuthSvelteKitHandler = (
 	event: RequestEvent,

@@ -74,7 +74,8 @@ export type SetupConvexAuthSvelteKitOptions = {
 	 */
 	ambientSignIns?: AmbientSignInClient[];
 	/**
-	 * Re-run the `load` functions when the user signs in or out, so the
+	 * Re-run the `load` functions when the user signs in, signs out or switches
+	 * to another session, so the
 	 * server-rendered data matches the new session. Defaults to `true`.
 	 */
 	invalidateOnAuthChange?: boolean;
