@@ -82,6 +82,28 @@ describe('convexAuthSvelteKitHandle', () => {
 		expect(thrown).toMatchObject({ status: 307, location: 'https://app.example/signin' });
 	});
 
+	it('rethrows such a redirect even when a later hook kept the cookies SvelteKit added', async () => {
+		const handle = convexAuthSvelteKitHandle();
+		const thrown = await Promise.resolve()
+			.then(() =>
+				handle({
+					event: expiringRequest(true),
+					resolve: () => {
+						// A later hook that resolved first, then redirects with the
+						// resolved response's headers.
+						const headers = new Headers({ location: 'https://app.example/signin' });
+						for (const cookie of rotatedCookies) headers.append('set-cookie', cookie);
+						return new Response(null, { status: 307, headers });
+					}
+				})
+			)
+			.then(
+				() => null,
+				(error: unknown) => error
+			);
+		expect(isRedirect(thrown)).toBe(true);
+	});
+
 	it("doesn't repeat cookies SvelteKit already added", async () => {
 		const handle = convexAuthSvelteKitHandle();
 		const response = await handle({
