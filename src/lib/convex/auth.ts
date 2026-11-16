@@ -9,17 +9,18 @@ import { setupGoogle } from '@convex-dev/auth/methods/google/server';
 import { setupUsernamePasskey } from '@convex-dev/auth/methods/username-passkey/server';
 import { setupUsernamePassword } from '@convex-dev/auth/methods/username-password/server';
 
-// The frontend origin that the emailed links point at.
-const SITE_URL = env.SITE_URL ?? 'http://localhost:5173';
+// The frontend origin that the emailed links point at. Only its origin
+// counts, so `https://your-app.com/` works as well.
+const SITE_URL = new URL(env.SITE_URL ?? 'http://localhost:5173').origin;
 
 // The origins the app runs on: SITE_URL, the dev server and the preview
-// server of the e2e tests. OAuth may only redirect back to them, and passkeys
-// only work on them.
+// server of the e2e tests. OAuth may only redirect back to them.
 const origins = [...new Set([SITE_URL, 'http://localhost:5173', 'http://localhost:4173'])];
 const allowedRedirectOrigins = origins;
 
 // Passkeys are bound to `rpId` for good: a passkey made on `localhost` never
-// works on another domain. The domain of SITE_URL, and the origins on it.
+// works on another domain. The domain of SITE_URL, and those of the origins
+// above that are on it.
 const rpId = new URL(SITE_URL).hostname;
 const passkeyOrigins = origins.filter((origin) => {
 	const host = new URL(origin).hostname;
