@@ -1,5 +1,6 @@
-import { test, expect, type CDPSession, type Page } from '@playwright/test';
-import { uniqueUsername } from './auth';
+import type { CDPSession, Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import { openAccount, openAccountMenu, uniqueUsername } from './auth';
 
 // The tests run the passkey ceremonies against Chromium's virtual
 // authenticators, driven over the DevTools protocol. Chromium allows one
@@ -50,29 +51,45 @@ async function countAutofillRequests(page: Page) {
 const autofillRequests = (page: Page) =>
 	page.evaluate(() => (window as unknown as { __autofillRequests: number }).__autofillRequests);
 
-/**
- * Sign out while the authenticator ignores the conditional request that the
- * login form starts. A virtual authenticator answers passkey autofill as soon
- * as it holds a passkey, which would sign the user straight back in. With
- * presence simulation off, that request stays pending and never resolves,
- * even once presence is back on, so the next modal ceremony is the first to
- * get an answer.
- */
-async function signOutWithAutofillPending(page: Page, cdp: CDPSession, authenticatorId: string) {
-	await cdp.send('WebAuthn.setAutomaticPresenceSimulation', { authenticatorId, enabled: false });
-	const before = await autofillRequests(page);
+const passkeyForm = (page: Page) => page.getByRole('form', { name: 'Sign in with a passkey' });
+
+/** Sign out through the account menu. */
+async function signOut(page: Page) {
+	await page.goto('/');
+	await openAccountMenu(page);
 	await page.getByRole('button', { name: 'Sign out' }).click();
-	await expect.poll(() => autofillRequests(page)).toBeGreaterThan(before);
+	await expect(page.getByRole('link', { name: 'Sign in' }).first()).toBeVisible();
+}
+
+/**
+ * Sign out, then open the sign-in page while the authenticator ignores the
+ * conditional request that the passkey form starts. A virtual authenticator
+ * answers passkey autofill as soon as it holds a passkey, which would sign
+ * the user straight back in. With presence simulation off, that request
+ * stays pending and never resolves, even once presence is back on, so the
+ * next modal ceremony is the first to get an answer.
+ */
+async function openSignInWithAutofillPending(page: Page, cdp: CDPSession, authenticatorId: string) {
+	await signOut(page);
+	await cdp.send('WebAuthn.setAutomaticPresenceSimulation', { authenticatorId, enabled: false });
+	await page.goto('/signin');
+	await expect.poll(() => autofillRequests(page)).toBeGreaterThan(0);
 	// Give the request time to reach the authenticator before presence is
 	// back on.
 	await page.waitForTimeout(500);
 	await cdp.send('WebAuthn.setAutomaticPresenceSimulation', { authenticatorId, enabled: true });
-	await expect(page.getByText('Passkey autofill: waiting')).toBeVisible();
+	// The passkey tab isn't selected, so its form is hidden, but it's mounted
+	// and its autofill request runs.
+	await expect(page.locator('form[aria-label="Sign in with a passkey"]')).toHaveAttribute(
+		'data-autofill',
+		'waiting'
+	);
 }
 
-/** Run the identifier-first flow on the passkey page. */
+/** Run the identifier-first flow of the Passkey tab. */
 async function continueWithPasskey(page: Page, username: string) {
-	await page.getByLabel('Username').fill(username);
+	await page.getByRole('tab', { name: 'Passkey' }).click();
+	await passkeyForm(page).getByRole('textbox', { name: 'Username' }).fill(username);
 	await page.getByRole('button', { name: 'Continue with a passkey' }).click();
 }
 
@@ -82,9 +99,10 @@ const passkeyList = (page: Page) =>
 /** Create an account with a passkey on the authenticator. */
 async function signUpWithPasskey(page: Page) {
 	const username = uniqueUsername();
-	await page.goto('/passkey');
+	await page.goto('/signin');
 	await continueWithPasskey(page, username);
-	await expect(page.getByText(`Signed in as ${username}`)).toBeVisible();
+	await expect(page.getByTestId('session-name')).toHaveText(username);
+	await openAccount(page);
 	await expect(passkeyList(page)).toHaveCount(1);
 	return username;
 }
@@ -97,22 +115,37 @@ test('sign up with a passkey, sign out, and sign in with the username', async ({
 	const username = await signUpWithPasskey(page);
 	expect(await credentialCount(cdp, authenticator)).toBe(1);
 
-	await signOutWithAutofillPending(page, cdp, authenticator);
+	await openSignInWithAutofillPending(page, cdp, authenticator);
 	// Submitting pauses the pending autofill request, so the modal ceremony
 	// gets the browser's one ceremony slot.
 	await continueWithPasskey(page, username);
-	await expect(page.getByText(`Signed in as ${username}`)).toBeVisible();
-	await expect(passkeyList(page)).toHaveCount(1);
+	await expect(page.getByTestId('session-name')).toHaveText(username);
 	// The sign-in reused the passkey rather than making another.
 	expect(await credentialCount(cdp, authenticator)).toBe(1);
+});
+
+test('an autofill request the browser ends shows no error', async ({ page }) => {
+	// With no passkey stored, the virtual authenticator refuses the passkey
+	// form's background autofill request. The user never opened a prompt, so
+	// the form stays quiet.
+	const cdp = await enableWebAuthn(page);
+	await addAuthenticator(cdp);
+	await page.goto('/signin');
+	await expect(page.locator('form[aria-label="Sign in with a passkey"]')).toHaveAttribute(
+		'data-autofill',
+		'stopped'
+	);
+	await page.getByRole('tab', { name: 'Passkey' }).click();
+	await expect(passkeyForm(page).getByRole('alert')).toHaveCount(0);
 });
 
 test('passkey autofill signs in without a username', async ({ page }) => {
 	const cdp = await enableWebAuthn(page);
 	await addAuthenticator(cdp);
 	const username = await signUpWithPasskey(page);
+	await signOut(page);
 
-	// The virtual authenticator answers the conditional request of the login
+	// The virtual authenticator answers the conditional request of the passkey
 	// form right away, as if the user had picked the passkey from the
 	// autocompletion list of the username field.
 	const autofillSignIn = page.waitForResponse(
@@ -120,9 +153,9 @@ test('passkey autofill signs in without a username', async ({ page }) => {
 			response.url().includes('/auth/signin') &&
 			(response.request().postData() ?? '').includes('finishSignInWithUsernamePasskey')
 	);
-	await page.getByRole('button', { name: 'Sign out' }).click();
+	await page.goto('/signin');
 	expect((await autofillSignIn).status()).toBe(200);
-	await expect(page.getByText(`Signed in as ${username}`)).toBeVisible();
+	await expect(page.getByTestId('session-name')).toHaveText(username);
 });
 
 test('add a second passkey, rename it, and remove it', async ({ page }) => {
@@ -131,7 +164,7 @@ test('add a second passkey, rename it, and remove it', async ({ page }) => {
 	await signUpWithPasskey(page);
 
 	// Another passkey must authorize a removal, so the only one can't go.
-	await expect(passkeyList(page).getByRole('button', { name: 'Remove' })).toBeDisabled();
+	await expect(passkeyList(page).getByRole('button', { name: /^Remove/ })).toBeDisabled();
 
 	// The user re-authenticates with the first passkey, then registers the
 	// security key.
@@ -141,14 +174,15 @@ test('add a second passkey, rename it, and remove it', async ({ page }) => {
 	expect(await credentialCount(cdp, securityKey)).toBe(1);
 
 	const second = passkeyList(page).nth(1);
-	await second.getByLabel('New name').fill('Security key');
-	await second.getByRole('button', { name: 'Rename' }).click();
+	await second.getByRole('button', { name: /^Rename/ }).click();
+	await second.getByRole('textbox', { name: 'Passkey name' }).fill('Security key');
+	await second.getByRole('button', { name: 'Save' }).click();
 	const renamed = passkeyList(page).filter({ hasText: 'Security key' });
 	await expect(renamed).toHaveCount(1);
 
 	// The other passkey authorizes the removal.
-	await renamed.getByRole('button', { name: 'Remove' }).click();
+	await renamed.getByRole('button', { name: 'Remove Security key' }).click();
 	await expect(passkeyList(page)).toHaveCount(1);
 	await expect(passkeyList(page).filter({ hasText: 'Security key' })).toHaveCount(0);
-	await expect(page.getByRole('alert')).toHaveCount(0);
+	await expect(page.getByRole('dialog', { name: 'Account' }).getByRole('alert')).toHaveCount(0);
 });

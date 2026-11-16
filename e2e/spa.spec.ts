@@ -1,32 +1,33 @@
-import { test, expect, type Page } from '@playwright/test';
-import { uniqueUsername } from './auth';
+import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
+import { fillUsernameForm, openAccountMenu, uniqueUsername } from './auth';
 
 test('single-page app: sign up, reload, sign out, sign in', async ({ page, context }) => {
 	const username = uniqueUsername();
 	await page.goto('/spa');
-	await page.getByLabel('Username').fill(username);
-	await page.getByLabel('Password').fill('correct horse battery staple');
-	await page.getByRole('button', { name: 'Sign up' }).click();
-	await expect(page.getByText(`Signed in as ${username}`)).toBeVisible();
+	await page.getByRole('button', { name: 'Create an account' }).click();
+	await fillUsernameForm(page, username);
+	await page.getByRole('button', { name: 'Create account' }).click();
+	await expect(page.getByTestId('spa-name')).toHaveText(username);
 
 	// The SPA keeps the session in localStorage, not in cookies.
 	const cookies = await context.cookies();
 	expect(cookies.find((c) => c.name.startsWith('__convexAuth'))).toBeUndefined();
 	await page.reload();
-	await expect(page.getByText(`Signed in as ${username}`)).toBeVisible();
+	await expect(page.getByTestId('spa-name')).toHaveText(username);
 
+	await openAccountMenu(page);
 	await page.getByRole('button', { name: 'Sign out' }).click();
-	await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
 	expect(
 		await page.evaluate(() =>
 			Object.keys(localStorage).some((key) => key.startsWith('__convexAuthRefreshToken_'))
 		)
 	).toBe(false);
 
-	await page.getByLabel('Username').fill(username);
-	await page.getByLabel('Password').fill('correct horse battery staple');
-	await page.getByRole('button', { name: 'Sign in' }).click();
-	await expect(page.getByText(`Signed in as ${username}`)).toBeVisible();
+	await fillUsernameForm(page, username);
+	await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+	await expect(page.getByTestId('spa-name')).toHaveText(username);
 });
 
 test('a tab opened from an OAuth callback follows sign-ins in other tabs', async ({ context }) => {
@@ -34,26 +35,29 @@ test('a tab opened from an OAuth callback follows sign-ins in other tabs', async
 	// It's refused, and the tab must still hear about sessions of other tabs.
 	const callback = await context.newPage();
 	await callback.goto('/spa?convexAuthCode=not-a-real-code');
-	await expect(callback.getByRole('button', { name: 'Sign in' })).toBeVisible();
+	await callback.waitForSelector('html[data-hydrated]');
+	await expect(callback.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
 
 	const other = await context.newPage();
 	const username = uniqueUsername();
 	await other.goto('/spa');
-	await other.getByLabel('Username').fill(username);
-	await other.getByLabel('Password').fill('correct horse battery staple');
-	await other.getByRole('button', { name: 'Sign up' }).click();
-	await expect(other.getByText(`Signed in as ${username}`)).toBeVisible();
+	await other.waitForSelector('html[data-hydrated]');
+	await other.getByRole('button', { name: 'Create an account' }).click();
+	await fillUsernameForm(other, username);
+	await other.getByRole('button', { name: 'Create account' }).click();
+	await expect(other.getByTestId('spa-name')).toHaveText(username);
 
-	await expect(callback.getByText(`Signed in as ${username}`)).toBeVisible();
+	await expect(callback.getByTestId('spa-name')).toHaveText(username);
 });
 
 /** Sign up on the SPA page, which signs in. */
 async function signUpOnSpa(page: Page, username: string) {
 	await page.goto('/spa');
-	await page.getByLabel('Username').fill(username);
-	await page.getByLabel('Password').fill('correct horse battery staple');
-	await page.getByRole('button', { name: 'Sign up' }).click();
-	await expect(page.getByText(`Signed in as ${username}`)).toBeVisible();
+	await page.waitForSelector('html[data-hydrated]');
+	await page.getByRole('button', { name: 'Create an account' }).click();
+	await fillUsernameForm(page, username);
+	await page.getByRole('button', { name: 'Create account' }).click();
+	await expect(page.getByTestId('spa-name')).toHaveText(username);
 }
 
 test('a tab follows another tab that switches to another session', async ({ browser }) => {
@@ -62,13 +66,7 @@ test('a tab follows another tab that switches to another session', async ({ brow
 	const b = uniqueUsername();
 	const elsewherePage = await elsewhere.newPage();
 	await signUpOnSpa(elsewherePage, b);
-	const sessionB = await elsewherePage.evaluate(() =>
-		Object.fromEntries(
-			Object.keys(localStorage)
-				.filter((key) => key.startsWith('__convexAuth'))
-				.map((key) => [key, localStorage.getItem(key)!])
-		)
-	);
+	const sessionB = await settledSession(elsewherePage);
 	await elsewhere.close();
 
 	// Two tabs signed in as A. The second takes over session B without signing
@@ -76,12 +74,38 @@ test('a tab follows another tab that switches to another session', async ({ brow
 	const context = await browser.newContext();
 	const first = await context.newPage();
 	await signUpOnSpa(first, uniqueUsername());
+	await settledSession(first);
+	// The second tab only writes the tokens, from a page without the app, so
+	// that no client of its own refreshes session A over them.
 	const second = await context.newPage();
-	await second.goto('/spa');
+	await second.goto('/favicon.png');
 	await second.evaluate((tokens) => {
 		for (const [key, value] of Object.entries(tokens)) localStorage.setItem(key, value);
 	}, sessionB);
 
-	await expect(first.getByText(`Signed in as ${b}`)).toBeVisible();
+	await expect(first.getByTestId('spa-name')).toHaveText(b);
 	await context.close();
 });
+
+/**
+ * The tokens of the page's session, once they stop changing. A client
+ * refreshes its token right after the server accepts it, and a refresh that
+ * lands later would overwrite tokens a test writes in the meantime.
+ */
+async function settledSession(page: Page): Promise<Record<string, string>> {
+	const read = () =>
+		page.evaluate(() =>
+			Object.fromEntries(
+				Object.keys(localStorage)
+					.filter((key) => key.startsWith('__convexAuth'))
+					.map((key) => [key, localStorage.getItem(key)!])
+			)
+		);
+	let last = await read();
+	for (;;) {
+		await page.waitForTimeout(1000);
+		const next = await read();
+		if (JSON.stringify(next) === JSON.stringify(last)) return next;
+		last = next;
+	}
+}

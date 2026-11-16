@@ -18,7 +18,7 @@ Requires `@convex-dev/auth` 2.x, `convex` 1.48 or later, and `convex-svelte` 0.1
 
 ## Set up the backend
 
-The Convex functions are plain Convex Auth v2, with nothing Svelte-specific. Follow upstream's [getting started guide](https://github.com/get-convex/convex-auth/blob/main/packages/docs/docs/getting-started.mdx) and the guide of each [sign-in method](https://github.com/get-convex/convex-auth/tree/main/packages/docs/docs/methods). The demo backend in [`src/convex`](../../convex) wires up username + password, username + passkey and GitHub.
+The Convex functions are plain Convex Auth v2, with nothing Svelte-specific. Follow upstream's [getting started guide](https://github.com/get-convex/convex-auth/blob/main/packages/docs/docs/getting-started.mdx) and the guide of each [sign-in method](https://github.com/get-convex/convex-auth/tree/main/packages/docs/docs/methods). The demo backend in [`src/convex`](../../convex) wires up every method: email + password, username + password, username + passkey, GitHub, Google and Apple.
 
 Export `signOut`, `refreshSession` and `isAuthenticated` from `convex/auth.ts`:
 
@@ -250,7 +250,7 @@ While the component is mounted, the browser also offers the stored passkeys in t
 
 For the settings page, `useAddPasskey(api.auth).addPasskey()` and `useRemovePasskey(api.auth).removePasskey(passkeyId)` run the passkey dialogs. Adding asks the user to confirm with a passkey they already have. Removing asks for a different passkey of the account, so the last one can't be removed (`LAST_PASSKEY`). Listing and renaming have no helper, as in upstream: call `useQuery(api.auth.listPasskeys, {})` and `useConvexClient().mutation(api.auth.renamePasskey, { passkeyId, name })` from `convex-svelte`.
 
-The backend's `origin` must list every origin the app is served from, including the port: the demo lists `http://localhost:5173` for `vite dev` and `http://localhost:4173` for `vite preview`. The demo's [`/passkey` page](../../routes/%28kit%29/passkey/+page.svelte) shows the whole flow.
+The backend's `origin` must list every origin the app is served from, including the port, and `rpId` must be their domain. The demo derives both from `SITE_URL`, adding `http://localhost:5173` (`vite dev`) and `http://localhost:4173` (`vite preview`) when it's on `localhost`. Its [`PasskeyForm`](../../demo/auth/ui/PasskeyForm.svelte) and [`Passkeys`](../../demo/users/ui/Passkeys.svelte) components show the whole flow.
 
 ### OAuth
 

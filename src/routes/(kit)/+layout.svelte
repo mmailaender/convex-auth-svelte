@@ -2,6 +2,7 @@
 	import { setupConvexAuthSvelteKit } from '$lib/sveltekit';
 	import { PUBLIC_CONVEX_URL } from '$env/static/public';
 	import { api } from '$convex/_generated/api';
+	import AppShell from '$demo/ui/AppShell.svelte';
 
 	let { children, data } = $props();
 
@@ -13,4 +14,6 @@
 	});
 </script>
 
-{@render children()}
+<AppShell mode="sveltekit" signInHref="/signin">
+	{@render children()}
+</AppShell>

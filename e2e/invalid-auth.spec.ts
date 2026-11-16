@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from './fixtures';
 import { SignJWT } from 'jose';
 
 test('invalid auth cookie redirects to signin page', async ({ page, context }) => {

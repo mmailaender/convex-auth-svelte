@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { signOut, signUp } from './auth';
 
 test('route handler returns 403 when not authenticated', async ({ page }) => {

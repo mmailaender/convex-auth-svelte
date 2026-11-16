@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { signOut, signUp } from './auth';
 
 test('sign-out clears the session', async ({ page, context }) => {

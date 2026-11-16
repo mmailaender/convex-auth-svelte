@@ -19,6 +19,9 @@
 	});
 </script>
 
-<ol bind:this={listEl} class="flex grow flex-col gap-4 overflow-y-auto scroll-smooth px-8 py-4">
+<ol
+	bind:this={listEl}
+	class="flex min-h-0 grow flex-col gap-4 overflow-y-auto scroll-smooth px-8 py-4"
+>
 	{@render children?.()}
 </ol>
