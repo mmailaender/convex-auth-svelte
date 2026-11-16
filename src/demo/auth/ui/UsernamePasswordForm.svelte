@@ -36,10 +36,20 @@
 		error = null;
 	});
 
+	let checking = $state(false);
+
 	async function submit(event: SubmitEvent) {
 		event.preventDefault();
 		const form = event.currentTarget as HTMLFormElement;
-		await strengthChecked(form);
+		// The check can wait for the strength checker to load. A second submit
+		// meanwhile would start a second attempt.
+		if (checking) return;
+		checking = true;
+		try {
+			await strengthChecked(form);
+		} finally {
+			checking = false;
+		}
 		if (!form.checkValidity()) {
 			form.querySelector<HTMLElement>(':invalid')?.focus();
 			return;
@@ -98,9 +108,9 @@
 	<button
 		type="submit"
 		class="btn preset-filled-primary-500 w-full"
-		disabled={!hydrated.current || pending}
+		disabled={!hydrated.current || pending || checking}
 	>
-		{#if pending}<Spinner />{/if}
+		{#if pending || checking}<Spinner />{/if}
 		{mode === 'signUp' ? 'Create account' : 'Sign in'}
 	</button>
 </form>

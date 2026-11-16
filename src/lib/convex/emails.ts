@@ -30,23 +30,32 @@ const vSendEmailArgs = {
 	)
 };
 
-/** Whether emails go to the dev inbox instead of Resend. */
+/**
+ * Whether emails go to the dev inbox instead of Resend. It takes an explicit
+ * `DEV_INBOX=true`, so a deployment that's only missing its Resend key fails
+ * to send instead of publishing its emails.
+ */
 function devInbox(): boolean {
-	return env.RESEND_API_KEY === undefined;
+	return env.RESEND_API_KEY === undefined && env.DEV_INBOX === 'true';
 }
 
 /**
  * Sends an email of Convex Auth: through Resend when `RESEND_API_KEY` is
- * set, or into the `devEmails` table otherwise, so the demo runs without a
- * Resend account. Passed to `setupEmailPassword` in place of Resend's
- * `sendEmail`.
+ * set, or into the `devEmails` table with `DEV_INBOX=true`, so the demo runs
+ * without a Resend account. Passed to `setupEmailPassword` in place of
+ * Resend's `sendEmail`.
  */
 export const send = internalMutation({
 	args: vSendEmailArgs,
 	returns: v.string(),
 	handler: async (ctx, args) => {
-		if (!devInbox()) {
+		if (env.RESEND_API_KEY !== undefined) {
 			return await ctx.runMutation(components.resend.lib.sendEmail, args);
+		}
+		if (!devInbox()) {
+			throw new Error(
+				'Set RESEND_API_KEY to send emails, or DEV_INBOX=true to keep them in the public dev inbox.'
+			);
 		}
 		const to = args.to.join(', ').toLowerCase();
 		return await ctx.db.insert('devEmails', {
@@ -57,12 +66,18 @@ export const send = internalMutation({
 	}
 });
 
+/** Whether the dev inbox is on, for showing its link. */
+export const inboxEnabled = query({
+	args: {},
+	returns: v.boolean(),
+	handler: async () => devInbox()
+});
+
 /**
- * The emails in the dev inbox, newest first. Empty once Resend is
- * configured.
+ * The emails in the dev inbox, newest first. Empty unless the dev inbox is on.
  *
- * Anyone can read the dev inbox, including the sign-in links in it, so
- * never run a deployment with real users without `RESEND_API_KEY`.
+ * Anyone can read the dev inbox, including the sign-in links in it, so never
+ * set `DEV_INBOX` on a deployment with real users.
  */
 export const inbox = query({
 	args: { to: v.optional(v.string()) },

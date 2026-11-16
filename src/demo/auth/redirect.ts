@@ -1,14 +1,28 @@
+// Any origin works here: it only tells a path on this site apart from a URL
+// that leaves it.
+const BASE = 'http://this.site';
+
 /**
  * The path to continue to after signing in: `redirectTo` when it is a path on
  * this site, `fallback` otherwise. Never an absolute URL, so a link can't
  * send a user who just signed in to another site.
+ *
+ * The value is resolved the way a browser resolves a `Location` header, so
+ * tricks like `//evil.com`, `/\evil.com` or `/<tab>/evil.com` (browsers drop
+ * tabs and newlines from URLs) don't get through.
  */
 export function safeRedirect(redirectTo: string | null | undefined, fallback = '/'): string {
-	if (!redirectTo || !redirectTo.startsWith('/') || redirectTo.startsWith('//')) {
+	if (!redirectTo || !redirectTo.startsWith('/')) {
 		return fallback;
 	}
-	if (redirectTo.startsWith('/\\')) {
+	let url: URL;
+	try {
+		url = new URL(redirectTo, BASE);
+	} catch {
 		return fallback;
 	}
-	return redirectTo;
+	if (url.origin !== BASE) {
+		return fallback;
+	}
+	return url.pathname + url.search + url.hash;
 }

@@ -20,8 +20,11 @@ const app = defineApp({
 		AUTH_APPLE_TEAM_ID: v.string(),
 		AUTH_APPLE_KEY_ID: v.string(),
 		AUTH_APPLE_PRIVATE_KEY: v.string(),
-		// Without a Resend API key, emails land in the dev inbox (see emails.ts).
+		// Emails go through Resend with an API key. Without one, they land in
+		// the public dev inbox with DEV_INBOX=true, and fail to send otherwise
+		// (see emails.ts).
 		RESEND_API_KEY: v.optional(v.string()),
+		DEV_INBOX: v.optional(v.string()),
 		SENDER_EMAIL: v.optional(v.string()),
 		SENDER_NAME: v.optional(v.string()),
 		// The origin the emailed links point at. Defaults to the Vite dev server.

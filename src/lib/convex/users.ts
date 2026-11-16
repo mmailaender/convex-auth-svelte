@@ -145,12 +145,30 @@ export const generateAvatarUploadUrl = mutation({
 	}
 });
 
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+
 /** Sets the uploaded avatar of the signed-in user, replacing the previous one. */
 export const updateAvatar = mutation({
 	args: { storageId: v.id('_storage') },
 	returns: v.null(),
 	handler: async (ctx, { storageId }) => {
 		const user = await requireUser(ctx);
+		if (user.imageId === storageId) {
+			return null;
+		}
+		const file = await ctx.db.system.get('_storage', storageId);
+		if (file === null || !file.contentType?.startsWith('image/') || file.size > MAX_AVATAR_BYTES) {
+			throw new Error('An avatar is an image of up to 2 MB.');
+		}
+		// Avatar URLs show their storage ID, so a caller could pass another
+		// user's avatar, and its file would be deleted with their next change.
+		const owner = await ctx.db
+			.query('users')
+			.withIndex('by_imageId', (q) => q.eq('imageId', storageId))
+			.first();
+		if (owner !== null) {
+			throw new Error('That file is already in use.');
+		}
 		if (user.imageId !== undefined) {
 			await ctx.storage.delete(user.imageId);
 		}

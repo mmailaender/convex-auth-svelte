@@ -44,7 +44,7 @@ Register `https://<deployment>.convex.site/oauth/<provider>/callback` as the cal
 
 ### Emails
 
-Without `RESEND_API_KEY`, the backend doesn't send emails: it stores them, and `/dev/inbox` shows them with their links. That's how the e2e tests read them. Anyone can read that page, so set Resend up before real people sign up:
+Emails go through Resend once you set it up:
 
 ```bash
 npx convex env set RESEND_API_KEY <key>
@@ -52,4 +52,6 @@ npx convex env set SENDER_EMAIL auth@your-domain.com   # a domain verified with 
 npx convex env set SITE_URL https://your-app.com        # where the emailed links point
 ```
 
-`SITE_URL` defaults to `http://localhost:5173`. The dev inbox rewrites the links to the origin you open it on.
+`SITE_URL` defaults to `http://localhost:5173`.
+
+To try the email flows without a Resend account, run `npx convex env set DEV_INBOX true`. The backend then stores the emails instead of sending them, and `/dev/inbox` shows them with their links, rewritten to the origin you open it on. That's how the e2e tests read them. Anyone can read that page, links included, so never set `DEV_INBOX` on a deployment with real users. With neither `RESEND_API_KEY` nor `DEV_INBOX`, sending an email fails.

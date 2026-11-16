@@ -21,10 +21,20 @@
 	let newPassword = $state('');
 	let error = $state<string | null>(null);
 
+	let checking = $state(false);
+
 	async function submit(event: SubmitEvent) {
 		event.preventDefault();
 		const form = event.currentTarget as HTMLFormElement;
-		await strengthChecked(form);
+		// The check can wait for the strength checker to load. A second submit
+		// meanwhile would start a second attempt.
+		if (checking) return;
+		checking = true;
+		try {
+			await strengthChecked(form);
+		} finally {
+			checking = false;
+		}
 		if (link.status !== 'ready') return;
 		if (!form.checkValidity()) {
 			form.querySelector<HTMLElement>(':invalid')?.focus();
@@ -66,9 +76,9 @@
 			<button
 				type="submit"
 				class="btn preset-filled-primary-500 w-full"
-				disabled={!hydrated.current || link.pending}
+				disabled={!hydrated.current || link.pending || checking}
 			>
-				{#if link.pending}<Spinner />{/if}
+				{#if link.pending || checking}<Spinner />{/if}
 				Save password
 			</button>
 		</form>

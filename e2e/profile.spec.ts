@@ -58,6 +58,12 @@ test('upload an avatar', async ({ page }) => {
 		.setInputFiles({ name: 'avatar.png', mimeType: 'image/png', buffer: Buffer.from(png) });
 	await page.getByRole('button', { name: 'Upload' }).click();
 	await expect(page.getByText('Avatar updated')).toBeVisible();
+	// The header, behind the dialog, shows the stored file rather than the
+	// local preview.
+	await expect(page.locator('button[aria-label="Open account menu"] img')).toHaveAttribute(
+		'src',
+		/\/api\/storage\//
+	);
 });
 
 test('the well-known change-password URL opens the account dialog', async ({ page }) => {

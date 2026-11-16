@@ -38,6 +38,7 @@ type Env = {
 	readonly AUTH_GITHUB_CLIENT_SECRET: string;
 	readonly AUTH_GOOGLE_CLIENT_ID: string;
 	readonly AUTH_GOOGLE_CLIENT_SECRET: string;
+	readonly DEV_INBOX: string | undefined;
 	readonly RESEND_API_KEY: string | undefined;
 	readonly SENDER_EMAIL: string | undefined;
 	readonly SENDER_NAME: string | undefined;

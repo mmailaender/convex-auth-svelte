@@ -22,13 +22,13 @@
 		children: Snippet;
 	} = $props();
 
-	const inbox = useQuery(api.emails.inbox, () => ({}));
+	const inboxEnabled = useQuery(api.emails.inboxEnabled, () => ({}));
 
 	const links = $derived([
 		{ href: '/', label: 'Overview' },
 		{ href: '/product', label: 'Chat' },
 		{ href: '/spa', label: 'Client-only' },
-		...(inbox.data?.enabled ? [{ href: '/dev/inbox', label: 'Dev inbox' }] : [])
+		...(inboxEnabled.data ? [{ href: '/dev/inbox', label: 'Dev inbox' }] : [])
 	]);
 
 	function isActive(href: string) {

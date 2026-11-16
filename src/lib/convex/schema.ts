@@ -14,7 +14,7 @@ export default defineSchema({
 		imageId: v.optional(v.id('_storage')),
 		imageUrl: v.optional(v.string()),
 		githubLogin: v.optional(v.string())
-	}),
+	}).index('by_imageId', ['imageId']),
 	messages: defineTable({
 		userId: v.id('users'),
 		body: v.string()

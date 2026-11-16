@@ -14,7 +14,11 @@ page, so they need no seeded data or secrets.
    npx convex dev --once
    ```
 
-   Leave `RESEND_API_KEY` unset: the email tests read their links from the dev inbox.
+   Turn on the dev inbox and leave `RESEND_API_KEY` unset: the email tests read their links from the dev inbox.
+
+   ```bash
+   npx convex env set DEV_INBOX true
+   ```
 
    `npx convex dev` also writes `PUBLIC_CONVEX_URL` to `.env.local`.
 

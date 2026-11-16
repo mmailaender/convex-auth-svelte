@@ -50,7 +50,8 @@ export const {
 	passwordComponent: components.authEmailPassword,
 	emailSender: {
 		kind: 'resend',
-		// Resend when RESEND_API_KEY is set, the dev inbox otherwise. Referenced
+		// Resend when RESEND_API_KEY is set, the dev inbox with DEV_INBOX=true
+		// (see emails.ts). Referenced
 		// by name, because `internal.emails.send` would make the types of this
 		// module depend on themselves.
 		sendEmail: makeFunctionReference<'mutation'>(

@@ -31,9 +31,8 @@
 	<header class="flex flex-col gap-2">
 		<h1 class="h3">Dev inbox</h1>
 		<p class="text-surface-700-300 text-sm">
-			Without <code class="code">RESEND_API_KEY</code>, the backend keeps the emails of Convex Auth
-			here instead of sending them. Anyone can read this page, so set a Resend API key before real
-			users sign up.
+			With <code class="code">DEV_INBOX=true</code>, the backend keeps the emails of Convex Auth
+			here instead of sending them. Anyone can read this page, so never turn it on for real users.
 		</p>
 		{#if to}
 			<p class="text-sm">
@@ -44,7 +43,10 @@
 	</header>
 
 	{#if inbox.data && !inbox.data.enabled}
-		<p class="card preset-tonal p-4 text-sm">Resend is configured, so emails are sent for real.</p>
+		<p class="card preset-tonal p-4 text-sm">
+			The dev inbox is off. Emails go through Resend once <code class="code">RESEND_API_KEY</code> is
+			set.
+		</p>
 	{:else if inbox.data?.emails.length === 0}
 		<div class="card preset-tonal flex flex-col items-center gap-3 p-10 text-center">
 			<InboxIcon class="text-surface-600-400 size-8" />
