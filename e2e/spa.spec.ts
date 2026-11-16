@@ -66,13 +66,7 @@ test('a tab follows another tab that switches to another session', async ({ brow
 	const b = uniqueUsername();
 	const elsewherePage = await elsewhere.newPage();
 	await signUpOnSpa(elsewherePage, b);
-	const sessionB = await elsewherePage.evaluate(() =>
-		Object.fromEntries(
-			Object.keys(localStorage)
-				.filter((key) => key.startsWith('__convexAuth'))
-				.map((key) => [key, localStorage.getItem(key)!])
-		)
-	);
+	const sessionB = await settledSession(elsewherePage);
 	await elsewhere.close();
 
 	// Two tabs signed in as A. The second takes over session B without signing
@@ -80,8 +74,11 @@ test('a tab follows another tab that switches to another session', async ({ brow
 	const context = await browser.newContext();
 	const first = await context.newPage();
 	await signUpOnSpa(first, uniqueUsername());
+	await settledSession(first);
+	// The second tab only writes the tokens, from a page without the app, so
+	// that no client of its own refreshes session A over them.
 	const second = await context.newPage();
-	await second.goto('/spa');
+	await second.goto('/favicon.png');
 	await second.evaluate((tokens) => {
 		for (const [key, value] of Object.entries(tokens)) localStorage.setItem(key, value);
 	}, sessionB);
@@ -89,3 +86,26 @@ test('a tab follows another tab that switches to another session', async ({ brow
 	await expect(first.getByTestId('spa-name')).toHaveText(b);
 	await context.close();
 });
+
+/**
+ * The tokens of the page's session, once they stop changing. A client
+ * refreshes its token right after the server accepts it, and a refresh that
+ * lands later would overwrite tokens a test writes in the meantime.
+ */
+async function settledSession(page: Page): Promise<Record<string, string>> {
+	const read = () =>
+		page.evaluate(() =>
+			Object.fromEntries(
+				Object.keys(localStorage)
+					.filter((key) => key.startsWith('__convexAuth'))
+					.map((key) => [key, localStorage.getItem(key)!])
+			)
+		);
+	let last = await read();
+	for (;;) {
+		await page.waitForTimeout(1000);
+		const next = await read();
+		if (JSON.stringify(next) === JSON.stringify(last)) return next;
+		last = next;
+	}
+}
