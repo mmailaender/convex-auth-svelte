@@ -1,11 +1,38 @@
 # Convex Auth for Svelte and SvelteKit
 
-Svelte bindings for [Convex Auth v2](https://github.com/get-convex/convex-auth) (`@convex-dev/auth@2`).
+Svelte bindings for [Convex Auth v2](https://github.com/get-convex/convex-auth) (`@convex-dev/auth@2`). The API mirrors upstream's React and Next.js clients, so upstream's docs for the backend apply as they are.
 
-- [SvelteKit with server-side rendering](src/lib/sveltekit/README.md)
-- [Client-only Svelte](src/lib/svelte/README.md)
+![Signing up with a passkey in the reference app, then adding a second passkey](https://raw.githubusercontent.com/mmailaender/convex-auth-svelte/c350e337582d/docs/media/intro.gif)
+
+## Get started
+
+```bash
+pnpm add @mmailaender/convex-auth-svelte@alpha @convex-dev/auth convex convex-svelte
+```
+
+Then follow the guide for your app:
+
+| Guide                                    | For                                                                                                                                   |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [SvelteKit](src/lib/sveltekit/README.md) | SvelteKit with server-side rendering. The refresh token stays in an httpOnly cookie, and pages render signed in on the first request. |
+| [Svelte](src/lib/svelte/README.md)       | Client-only apps. The tokens live in `localStorage`, or in the storage you pass.                                                      |
 
 Version 1.x supports Convex Auth v2 only. Apps on Convex Auth v1 (`@convex-dev/auth@0.0.x`) stay on `@mmailaender/convex-auth-svelte@0.1.x`.
+
+## Sign-in methods
+
+Each method has the helpers of upstream's React client, from `@mmailaender/convex-auth-svelte/methods/<method>`:
+
+| Method                | Helpers                                                                                                                                 |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Username + password   | `useSignInWithUsernamePassword`, `useSignUpWithUsernamePassword`                                                                        |
+| Email + password      | Sign-in, sign-up with a validation link, password reset and email change, e.g. `useSignUpWithEmailPassword`, `useStartPasswordRecovery` |
+| Passkeys              | `useSignInWithUsernamePasskey`, with browser autofill, plus `useAddPasskey` and `useRemovePasskey`                                      |
+| Google, Apple, GitHub | `useSignInWithGoogle`, `useSignInWithApple`, `useSignInWithGithub`                                                                      |
+
+## Reference app
+
+The demo in `src/routes` has UI for every method above, and the account management that comes with each: profile, avatar, change email and password, and passkeys. Copy the components you need from [src/demo](src/demo/README.md). They aren't part of the package.
 
 ## Upgrade from 0.1.x
 
@@ -21,4 +48,4 @@ See [docs/upstreaming.md](docs/upstreaming.md) for how this maps onto `@convex-d
 
 ## Develop
 
-`pnpm dev` runs the demo app in `src/routes` against the Convex deployment in `.env.local`. `/` is the SvelteKit demo and `/spa` the client-only one. See [e2e/README.md](e2e/README.md) to run the tests.
+`pnpm dev` runs the reference app against the Convex deployment in `.env.local`. `/` is the SvelteKit app and `/spa` the client-only one. See [src/demo/README.md](src/demo/README.md) for the environment variables, and [e2e/README.md](e2e/README.md) to run the tests.
