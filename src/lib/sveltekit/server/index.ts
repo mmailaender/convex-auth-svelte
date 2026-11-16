@@ -103,18 +103,20 @@ function svelteKitCookieStore(cookies: Cookies): CookieStore & { writes: CookieW
  * without it.
  */
 function withCookies(event: RequestEvent, response: Response, writes: CookieWrite[]): Response {
+	if (writes.length === 0) return response;
+	// For a client-side navigation, SvelteKit turns a returned redirect into a
+	// JSON response after the hooks, without its headers, even when they
+	// already carry the cookies. A thrown redirect gets the cookies from
+	// SvelteKit instead.
+	const location = response.headers.get('location');
+	if (event.isDataRequest && response.status >= 300 && response.status <= 308 && location) {
+		redirect(response.status as 300, location);
+	}
 	const cookies = event.cookies;
 	const present = new Set(response.headers.getSetCookie().map((c) => c.split('=', 1)[0]));
 	// The last write of each cookie wins.
 	const missing = new Map(writes.filter((w) => !present.has(w.name)).map((w) => [w.name, w]));
 	if (missing.size === 0) return response;
-	// For a client-side navigation, SvelteKit turns a returned redirect into a
-	// JSON response after the hooks, without its headers. A thrown redirect
-	// gets the cookies from SvelteKit instead.
-	const location = response.headers.get('location');
-	if (event.isDataRequest && response.status >= 300 && response.status <= 308 && location) {
-		redirect(response.status as 300, location);
-	}
 	// The headers of a fetched or static response can be immutable.
 	const copy = new Response(response.body, response);
 	for (const { name, value, options } of missing.values()) {
