@@ -22,7 +22,7 @@
 		class: className
 	}: {
 		mode?: 'signIn' | 'signUp';
-		/** Where an OAuth flow returns to. Defaults to the current page. */
+		/** Where an OAuth flow returns to, as an absolute URL. Defaults to the current page. */
 		redirectTo?: string;
 		/** Called once a credential method signed the user in. */
 		onsignin?: () => void;

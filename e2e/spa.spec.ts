@@ -34,15 +34,17 @@ test('a tab opened from an OAuth callback follows sign-ins in other tabs', async
 	// It's refused, and the tab must still hear about sessions of other tabs.
 	const callback = await context.newPage();
 	await callback.goto('/spa?convexAuthCode=not-a-real-code');
-	await expect(callback.getByRole('button', { name: 'Sign in' })).toBeVisible();
+	await callback.waitForSelector('html[data-hydrated]');
+	await expect(callback.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
 
 	const other = await context.newPage();
 	const username = uniqueUsername();
 	await other.goto('/spa');
-	await other.getByLabel('Username').fill(username);
-	await other.getByLabel('Password').fill('correct horse battery staple');
-	await other.getByRole('button', { name: 'Sign up' }).click();
-	await expect(other.getByText(`Signed in as ${username}`)).toBeVisible();
+	await other.waitForSelector('html[data-hydrated]');
+	await other.getByRole('button', { name: 'Create an account' }).click();
+	await fillUsernameForm(other, username);
+	await other.getByRole('button', { name: 'Create account' }).click();
+	await expect(other.getByTestId('spa-name')).toHaveText(username);
 
-	await expect(callback.getByText(`Signed in as ${username}`)).toBeVisible();
+	await expect(callback.getByTestId('spa-name')).toHaveText(username);
 });

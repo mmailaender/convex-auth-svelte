@@ -20,7 +20,7 @@
 		methods = AUTH_CONFIG.methods,
 		onerror
 	}: {
-		/** Where the flow returns to. Defaults to the current page. */
+		/** Where the flow returns to, as an absolute URL. Defaults to the current page. */
 		redirectTo?: string;
 		disabled?: boolean;
 		methods?: Partial<Record<keyof typeof AUTH_CONFIG.methods, boolean>>;
