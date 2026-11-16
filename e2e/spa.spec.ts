@@ -28,3 +28,21 @@ test('single-page app: sign up, reload, sign out, sign in', async ({ page, conte
 	await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 	await expect(page.getByTestId('spa-name')).toHaveText(username);
 });
+
+test('a tab opened from an OAuth callback follows sign-ins in other tabs', async ({ context }) => {
+	// The callback code puts the client in a pending sign-in while it starts.
+	// It's refused, and the tab must still hear about sessions of other tabs.
+	const callback = await context.newPage();
+	await callback.goto('/spa?convexAuthCode=not-a-real-code');
+	await expect(callback.getByRole('button', { name: 'Sign in' })).toBeVisible();
+
+	const other = await context.newPage();
+	const username = uniqueUsername();
+	await other.goto('/spa');
+	await other.getByLabel('Username').fill(username);
+	await other.getByLabel('Password').fill('correct horse battery staple');
+	await other.getByRole('button', { name: 'Sign up' }).click();
+	await expect(other.getByText(`Signed in as ${username}`)).toBeVisible();
+
+	await expect(callback.getByText(`Signed in as ${username}`)).toBeVisible();
+});

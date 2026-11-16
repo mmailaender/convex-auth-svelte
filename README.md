@@ -11,13 +11,11 @@ Version 1.x supports Convex Auth v2 only. Apps on Convex Auth v1 (`@convex-dev/a
 
 Convex Auth v2 is a rewrite. The backend moves to components and per-method setup functions, so start with upstream's [migration notes](https://github.com/get-convex/convex-auth/blob/main/packages/docs/docs/migrating/from-convex-auth-v1.mdx). v2 has fewer sign-in methods than v1 at launch (no magic links, OTP, anonymous sign-in or arbitrary Auth.js providers), and upstream's migration tooling for existing user data isn't out yet.
 
-On the Svelte side, the API now mirrors upstream's React and Next.js clients:
+On the Svelte side, the API now mirrors upstream's React and Next.js clients. The migration sections of the [SvelteKit](src/lib/sveltekit/README.md#migrate-from-01x) and [Svelte](src/lib/svelte/README.md#migrate-from-01x) guides show each change as a before/after:
 
-- `setupConvexAuth({ convexUrl, api: api.auth })` replaces `<ConvexAuthProvider>`. `useAuthActions()` and `useAuthToken()` work as in React, and the auth state comes from `useAuth()` of `convex-svelte`. Our own `useAuth()` is gone.
-- `useAuth().signIn(provider, params)` is gone. Each method has the hooks of upstream's React client, e.g. `useSignInWithUsernamePassword(api.auth)` from `@mmailaender/convex-auth-svelte/methods/username-password`.
-- SvelteKit: the auth routes come from upstream's `setupConvexAuthServer`, mounted as `/auth/signin`, `/auth/refresh` and `/auth/signout`. Delete your `/api/auth` route.
-- SvelteKit: `createConvexAuthHooks` and `createConvexAuthHandlers` are replaced by `setupConvexAuthSvelteKit` from `/sveltekit/server`, the counterpart of `setupConvexAuthNextjs`. The client's `setupConvexAuth` from `/sveltekit` is now `setupConvexAuthSvelteKit` and takes `initialToken` instead of `getServerState`. The refresh token no longer reaches page data.
-- `createRouteMatcher` is gone, as in upstream v2. Compare `event.url.pathname` in your handler.
+- `useAuth()` from this package is gone: the state comes from `useAuth()` of `convex-svelte`, and the actions from `useAuthActions()`.
+- `signIn(provider, params)` is gone: each method has the helpers of upstream's React client, e.g. `useSignInWithUsernamePassword(api.auth)`.
+- SvelteKit: `createConvexAuthHooks` and `createConvexAuthHandlers` become `setupConvexAuthSvelteKit`, and sign-in goes through three auth routes from upstream instead of `POST /api/auth`. The refresh token no longer reaches page data.
 
 See [docs/upstreaming.md](docs/upstreaming.md) for how this maps onto `@convex-dev/auth` and what a PR there could share.
 

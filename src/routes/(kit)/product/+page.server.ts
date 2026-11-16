@@ -4,7 +4,7 @@ import { api } from '$lib/convex/_generated/api.js';
 import type { PageServerLoad } from './$types';
 
 export const load = (async () => {
-	// `handleAuth` runs the request with the session's access token, so this
+	// The handle hook runs the request with the session's access token, so this
 	// client is authenticated as the signed-in user.
 	const client = createConvexHttpClient({ url: PUBLIC_CONVEX_URL });
 	const [viewer, messages] = await Promise.all([
