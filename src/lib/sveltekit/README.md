@@ -111,7 +111,7 @@ export const handle = convexAuthSvelteKitHandle(async (event, { isAuthenticated 
 });
 ```
 
-`isAuthenticated()` verifies the token with the backend, so a forged cookie doesn't pass. Don't throw `error()` in the handler: SvelteKit leaves the cookies off error responses, so a session the hook just refreshed would be lost. Return a `Response` with the error status instead. To combine it with other hooks, use `sequence(convexAuthSvelteKitHandle(), yourHandle)`.
+`isAuthenticated()` verifies the token with the backend, so a forged cookie doesn't pass. To combine it with other hooks, use `sequence(convexAuthSvelteKitHandle(), yourHandle)`. Don't throw `error()` in the handler or in a later hook: SvelteKit leaves the cookies off error responses, so a session the hook just refreshed would be lost. Return a `Response` with the error status instead.
 
 The hook also resolves the request inside `convex-svelte`'s `withServerConvexToken`. Load functions then get an authenticated client from `createConvexHttpClient()` of `convex-svelte/sveltekit`:
 
@@ -163,7 +163,7 @@ Then call `setupConvexAuthSvelteKit` from `/sveltekit` in the root layout, in pl
 {@render children()}
 ```
 
-`initialToken` is a getter so the `data` prop isn't captured at its initial value. It's read once. When the user signs in or out, the client calls `invalidateAll()` so your load functions run again with the new cookies. Pass `invalidateOnAuthChange: false` to turn that off.
+`initialToken` is a getter so the `data` prop isn't captured at its initial value. It's read once. When the user signs in, signs out or switches to another session, the client calls `invalidateAll()` so your load functions run again with the new cookies. Pass `invalidateOnAuthChange: false` to turn that off.
 
 ## Sign in
 
@@ -213,6 +213,8 @@ The helpers resolve to a result and never reject. A thrown error comes back as `
 | `methods/oauth/react`                     | `methods/oauth`                                |
 
 The email link hooks (`useCompleteSignUpWithEmailPassword`, `useCompletePasswordRecovery`, `useCompleteChangeEmail`) return `{ current }` instead of the state itself, so the state stays reactive.
+
+For email + password, add `signInWithEmailPassword`, `completeSignUpWithEmailPassword` and `completePasswordRecovery` to the `signIn` list of `setupConvexAuthServer`: they create sessions. `signUpWithEmailPassword` and the functions that start a flow or change the email address run on the Convex client and aren't listed.
 
 ### Passkeys
 
