@@ -276,3 +276,129 @@ As with React, the state comes from the Convex bindings and the actions from Con
 ```
 
 When a session is revoked on the server (for example by a password reset), the client signs out as soon as its `isAuthenticated` query updates. It doesn't wait for the access token to expire.
+
+## Migrate from 0.1.x
+
+0.1.x ran on Convex Auth v1. Move the backend first, with upstream's [migration guide](https://github.com/get-convex/convex-auth/blob/main/packages/docs/docs/migrating/from-convex-auth-v1.mdx): v2 replaces `convexAuth({ providers })` and `auth.addHttpRoutes(http)` with components and one setup function per sign-in method. Then change the SvelteKit app as below. `@auth/core` is no longer a dependency.
+
+### 1. Server setup and the handle hook
+
+`createConvexAuthHooks()` and `createConvexAuthHandlers()` become one `setupConvexAuthSvelteKit()`, set up in [Set up the SvelteKit helpers](#set-up-the-sveltekit-helpers). Its handle hook takes your redirect logic as a handler. `createRouteMatcher` is gone, as in upstream v2:
+
+```diff
+ // src/hooks.server.ts
+-import { sequence } from '@sveltejs/kit/hooks';
+-import {
+-	createConvexAuthHooks,
+-	createRouteMatcher
+-} from '@mmailaender/convex-auth-svelte/sveltekit/server';
+-
+-const isProtectedRoute = createRouteMatcher(['/product{/*rest}']);
+-const { handleAuth, isAuthenticated } = createConvexAuthHooks();
+-
+-const protect: Handle = async ({ event, resolve }) => {
+-	if (isProtectedRoute(event.url.pathname) && !(await isAuthenticated(event))) {
+-		redirect(307, '/signin');
+-	}
+-	return resolve(event);
+-};
+-
+-export const handle = sequence(handleAuth, protect);
++import { convexAuthSvelteKitHandle } from '$lib/server/convexAuth';
++
++export const handle = convexAuthSvelteKitHandle(async (event, { isAuthenticated }) => {
++	if (event.url.pathname.startsWith('/product') && !(await isAuthenticated())) {
++		redirect(307, '/signin');
++	}
++});
+```
+
+### 2. The auth routes
+
+`handleAuth` answered `POST /api/auth` from inside the hook. v2's client posts to `/auth/signin`, `/auth/refresh` and `/auth/signout` instead, served by upstream's handlers. Add them as in [Set up the auth route handlers](#set-up-the-auth-route-handlers) and [Mount the auth routes](#mount-the-auth-routes), and list every sign-in function in `signIn`.
+
+### 3. The root layout
+
+The server passes down the access token instead of a serialized auth state, and the refresh token no longer reaches page data:
+
+```diff
+ // src/routes/+layout.server.ts
+-import { createConvexAuthHandlers } from '@mmailaender/convex-auth-svelte/sveltekit/server';
+-
+-const { getAuthState } = createConvexAuthHandlers();
+-
+-export const load = async (event) => ({ authState: await getAuthState(event) });
++import { convexAuthSvelteKitAccessToken } from '$lib/server/convexAuth';
++
++export const load = (event) => ({ convexAuthToken: convexAuthSvelteKitAccessToken(event) });
+```
+
+```diff
+ <!-- src/routes/+layout.svelte -->
+ <script lang="ts">
+-	import { setupConvexAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
++	import { setupConvexAuthSvelteKit } from '@mmailaender/convex-auth-svelte/sveltekit';
++	import { PUBLIC_CONVEX_URL } from '$env/static/public';
++	import { api } from '$convex/_generated/api';
+
+ 	let { children, data } = $props();
+
+-	setupConvexAuth({ getServerState: () => data.authState });
++	setupConvexAuthSvelteKit({
++		convexUrl: PUBLIC_CONVEX_URL,
++		initialToken: () => data.convexAuthToken,
++		api: api.auth
++	});
+ </script>
+```
+
+`convexUrl` is no longer read from the environment for you, and `options` is renamed to `clientOptions`.
+
+### 4. Load functions and endpoints
+
+The handle hook runs each request with the session's token, so `convex-svelte`'s client is authenticated as is:
+
+```diff
+ // src/routes/product/+page.server.ts
+-import { createConvexAuthHandlers } from '@mmailaender/convex-auth-svelte/sveltekit/server';
++import { createConvexHttpClient } from 'convex-svelte/sveltekit';
++import { PUBLIC_CONVEX_URL } from '$env/static/public';
+
+ export const load = async (event) => {
+-	const { createConvexHttpClient } = createConvexAuthHandlers();
+-	const client = await createConvexHttpClient(event);
++	const client = createConvexHttpClient({ url: PUBLIC_CONVEX_URL });
+ 	return { viewer: await client.query(api.users.viewer, {}) };
+ };
+```
+
+Replace `createConvexAuthHandlers().isAuthenticated(event)` with `isAuthenticatedSvelteKit(event)`.
+
+### 5. Signing in
+
+The generic `signIn(provider, params)` is gone. Each method has its own helpers, and a failure comes back as a typed result instead of a thrown error (see [Sign in](#sign-in)):
+
+| 0.1.x                                                  | 1.x                                                                                                                                                                                                                           |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `signIn('password', { email, password, flow })`        | `useSignInWithEmailPassword(api.auth)`, `useSignUpWithEmailPassword(api.auth)` from `/methods/email-password`. Sign-up finishes on the emailed link's page with `useCompleteSignUpWithEmailPassword(api.auth, { emailCode })` |
+| `signIn('password', …)` with usernames                 | `useSignInWithUsernamePassword(api.auth)`, `useSignUpWithUsernamePassword(api.auth)` from `/methods/username-password`                                                                                                        |
+| `signIn('password', { flow: 'reset', … })`             | `useStartPasswordRecovery(api.auth)`, then `useCompletePasswordRecovery(api.auth, { emailCode })` on the emailed link's page                                                                                                  |
+| `signIn('github', { redirectTo })`                     | `useSignInWithGithub(api.auth).signIn({ redirectTo })`, and `google`, `apple` likewise                                                                                                                                        |
+| magic links, OTP, `anonymous`, other Auth.js providers | not in Convex Auth v2 yet                                                                                                                                                                                                     |
+
+Add each method's session-creating functions to the `signIn` list of `setupConvexAuthServer`, or the sign-in route refuses them.
+
+### 6. Auth state and sign-out
+
+```diff
+ <script lang="ts">
+-	import { useAuth } from '@mmailaender/convex-auth-svelte/sveltekit';
++	import { useAuth } from 'convex-svelte';
++	import { useAuthActions, useAuthToken } from '@mmailaender/convex-auth-svelte/svelte';
+
+-	const { isLoading, isAuthenticated, signOut, token } = useAuth();
++	const auth = useAuth(); // auth.isLoading, auth.isAuthenticated
++	const { signOut } = useAuthActions();
++	const token = useAuthToken(); // token.current
+ </script>
+```
