@@ -70,7 +70,7 @@
 		{
 			icon: InboxIcon,
 			title: 'Dev inbox',
-			text: 'Without a Resend API key, the emails of Convex Auth land here, links included.',
+			text: 'With DEV_INBOX=true and no Resend API key, the emails of Convex Auth land here, links included.',
 			href: '/dev/inbox',
 			code: 'src/lib/convex/emails.ts'
 		}

@@ -146,6 +146,9 @@ export const generateAvatarUploadUrl = mutation({
 });
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+// Raster images only: an SVG can carry script, which runs when its file URL
+// is opened directly. The profile dialog uploads WebP.
+const AVATAR_TYPES = new Set(['image/webp', 'image/png', 'image/jpeg', 'image/gif', 'image/avif']);
 
 /** Sets the uploaded avatar of the signed-in user, replacing the previous one. */
 export const updateAvatar = mutation({
@@ -157,8 +160,12 @@ export const updateAvatar = mutation({
 			return null;
 		}
 		const file = await ctx.db.system.get('_storage', storageId);
-		if (file === null || !file.contentType?.startsWith('image/') || file.size > MAX_AVATAR_BYTES) {
-			throw new Error('An avatar is an image of up to 2 MB.');
+		if (
+			file === null ||
+			!AVATAR_TYPES.has(file.contentType ?? '') ||
+			file.size > MAX_AVATAR_BYTES
+		) {
+			throw new Error('An avatar is a WebP, PNG, JPEG, GIF or AVIF image of up to 2 MB.');
 		}
 		// Avatar URLs show their storage ID, so a caller could pass another
 		// user's avatar, and its file would be deleted with their next change.

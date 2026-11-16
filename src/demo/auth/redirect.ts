@@ -8,8 +8,8 @@ const BASE = 'http://this.site';
  * send a user who just signed in to another site.
  *
  * The value is resolved the way a browser resolves a `Location` header, so
- * tricks like `//evil.com`, `/\evil.com` or `/<tab>/evil.com` (browsers drop
- * tabs and newlines from URLs) don't get through.
+ * tricks like `//evil.com`, `/\evil.com`, `/<tab>/evil.com` (browsers drop
+ * tabs and newlines from URLs) or `/.//evil.com` don't get through.
  */
 export function safeRedirect(redirectTo: string | null | undefined, fallback = '/'): string {
 	if (!redirectTo || !redirectTo.startsWith('/')) {
@@ -21,7 +21,9 @@ export function safeRedirect(redirectTo: string | null | undefined, fallback = '
 	} catch {
 		return fallback;
 	}
-	if (url.origin !== BASE) {
+	// Resolving drops dot segments, so `/.//evil.com` has the path
+	// `//evil.com`, which a browser reads as another host.
+	if (url.origin !== BASE || url.pathname.startsWith('//')) {
 		return fallback;
 	}
 	return url.pathname + url.search + url.hash;
