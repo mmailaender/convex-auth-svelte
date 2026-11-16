@@ -11,7 +11,7 @@
  * @module
  */
 import { dev } from '$app/environment';
-import type { Cookies, Handle, RequestEvent } from '@sveltejs/kit';
+import { redirect, type Cookies, type Handle, type RequestEvent } from '@sveltejs/kit';
 import { ConvexHttpClient } from 'convex/browser';
 import { withServerConvexToken } from 'convex-svelte/sveltekit/server';
 import {
@@ -102,11 +102,19 @@ function svelteKitCookieStore(cookies: Cookies): CookieStore & { writes: CookieW
  * through its own `resolve()`, but not to a `Response` a hook returns
  * without it.
  */
-function withCookies(response: Response, cookies: Cookies, writes: CookieWrite[]): Response {
+function withCookies(event: RequestEvent, response: Response, writes: CookieWrite[]): Response {
+	const cookies = event.cookies;
 	const present = new Set(response.headers.getSetCookie().map((c) => c.split('=', 1)[0]));
 	// The last write of each cookie wins.
 	const missing = new Map(writes.filter((w) => !present.has(w.name)).map((w) => [w.name, w]));
 	if (missing.size === 0) return response;
+	// For a client-side navigation, SvelteKit turns a returned redirect into a
+	// JSON response after the hooks, without its headers. A thrown redirect
+	// gets the cookies from SvelteKit instead.
+	const location = response.headers.get('location');
+	if (event.isDataRequest && response.status >= 300 && response.status <= 308 && location) {
+		redirect(response.status as 300, location);
+	}
 	// The headers of a fetched or static response can be immutable.
 	const copy = new Response(response.body, response);
 	for (const { name, value, options } of missing.values()) {
@@ -186,12 +194,12 @@ export function setupConvexAuthSvelteKit(config: ConvexAuthSvelteKitConfig) {
 					isAuthenticated: () => isAuthenticatedSvelteKit(event),
 					getToken: () => session.getToken()
 				});
-				if (response) return withCookies(response, event.cookies, cookies.writes);
+				if (response) return withCookies(event, response, cookies.writes);
 			}
 			// A later hook in a `sequence()` can return a `Response` without
 			// resolving, which would drop the refreshed cookies.
 			const response = await withServerConvexToken(token ?? undefined, () => resolve(event));
-			return withCookies(response, event.cookies, cookies.writes);
+			return withCookies(event, response, cookies.writes);
 		};
 	}
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Cookies, RequestEvent } from '@sveltejs/kit';
+import { isRedirect, type Cookies, type RequestEvent } from '@sveltejs/kit';
 import { AUTH_JWT_COOKIE, AUTH_REFRESH_COOKIE } from '@convex-dev/auth/ssr';
 import { setupConvexAuthSvelteKit } from '$lib/sveltekit/server/index.js';
 
@@ -41,8 +41,9 @@ describe('convexAuthSvelteKitHandle', () => {
 	});
 
 	/** A request whose access token is about to expire, so the hook refreshes it. */
-	function expiringRequest() {
+	function expiringRequest(isDataRequest = false) {
 		return {
+			isDataRequest,
 			url: new URL('https://app.example/api/admin'),
 			request: new Request('https://app.example/api/admin'),
 			cookies: fakeCookies({ [AUTH_JWT_COOKIE]: jwt(5), [AUTH_REFRESH_COOKIE]: 'refresh-1' })
@@ -62,6 +63,23 @@ describe('convexAuthSvelteKitHandle', () => {
 		});
 		expect(response.status).toBe(403);
 		expect(response.headers.getSetCookie()).toEqual(rotatedCookies);
+	});
+
+	it('rethrows a returned redirect of a client-side navigation, so SvelteKit keeps the cookies', async () => {
+		const handle = convexAuthSvelteKitHandle();
+		const thrown = await Promise.resolve()
+			.then(() =>
+				handle({
+					event: expiringRequest(true),
+					resolve: () => Response.redirect('https://app.example/signin', 307)
+				})
+			)
+			.then(
+				() => null,
+				(error: unknown) => error
+			);
+		expect(isRedirect(thrown)).toBe(true);
+		expect(thrown).toMatchObject({ status: 307, location: 'https://app.example/signin' });
 	});
 
 	it("doesn't repeat cookies SvelteKit already added", async () => {
