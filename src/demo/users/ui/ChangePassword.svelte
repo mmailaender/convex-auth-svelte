@@ -7,7 +7,7 @@
 	import { useHydrated } from '$demo/primitives/hooks/hydrated.svelte.js';
 	import { toast } from 'svelte-sonner';
 	import { useConvexClient } from 'convex-svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import * as Password from '$demo/primitives/ui/password/index.js';
 	import Alert from '$demo/primitives/ui/Alert.svelte';
 	import Spinner from '$demo/primitives/ui/Spinner.svelte';

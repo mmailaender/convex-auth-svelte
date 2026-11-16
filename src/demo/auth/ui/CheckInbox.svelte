@@ -5,7 +5,7 @@
 <script lang="ts">
 	import MailIcon from '@lucide/svelte/icons/mail';
 	import { useQuery } from 'convex-svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 
 	let {
 		email,

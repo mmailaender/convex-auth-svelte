@@ -11,7 +11,7 @@
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { useAddPasskey, useRemovePasskey } from '$lib/methods/username-passkey.svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import Alert from '$demo/primitives/ui/Alert.svelte';
 	import Spinner from '$demo/primitives/ui/Spinner.svelte';
 	import { authErrorMessage, type AuthUserError } from '$demo/auth/errors.js';

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Id } from '$lib/convex/_generated/dataModel';
+	import type { Id } from '$convex/_generated/dataModel';
 
 	interface Props {
 		authorId: Id<'users'>;

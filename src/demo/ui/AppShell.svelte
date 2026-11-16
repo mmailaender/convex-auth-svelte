@@ -7,7 +7,7 @@
 	import { page } from '$app/state';
 	import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
 	import { useQuery } from 'convex-svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import ProfileDialog from '$demo/users/ui/ProfileDialog.svelte';
 	import UserButton from '$demo/users/ui/UserButton.svelte';
 

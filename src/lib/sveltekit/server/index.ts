@@ -129,7 +129,7 @@ function withCookies(event: RequestEvent, response: Response, writes: CookieWrit
  * Build the SvelteKit server helpers from one config.
  *
  * ```ts
- * // src/lib/server/auth.ts
+ * // src/lib/server/convexAuth.ts
  * export const {
  *   convexAuthSvelteKitHandle,
  *   convexAuthSvelteKitAccessToken,

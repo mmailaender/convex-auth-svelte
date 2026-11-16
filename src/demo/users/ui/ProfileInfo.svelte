@@ -4,8 +4,8 @@
 	import { toast } from 'svelte-sonner';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import { useConvexClient } from 'convex-svelte';
-	import type { Id } from '$lib/convex/_generated/dataModel';
-	import { api } from '$lib/convex/_generated/api';
+	import type { Id } from '$convex/_generated/dataModel';
+	import { api } from '$convex/_generated/api';
 	import * as Avatar from '$demo/primitives/ui/avatar/index.js';
 	import * as ImageCropper from '$demo/primitives/ui/image-cropper/index.js';
 	import { getFileFromUrl } from '$demo/primitives/ui/image-cropper/index.js';

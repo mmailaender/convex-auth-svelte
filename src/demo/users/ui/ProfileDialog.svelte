@@ -5,7 +5,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { useAuth, useQuery } from 'convex-svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import * as Dialog from '$demo/primitives/ui/dialog/index.js';
 	import UserProfile from './UserProfile.svelte';
 	import { PROFILE_DIALOG, setProfileDialog } from './profileDialog.js';

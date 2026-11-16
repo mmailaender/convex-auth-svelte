@@ -9,9 +9,12 @@ const config = {
 
 	kit: {
 		adapter: adapter(),
+		// The package is src/lib. The demo app around it lives next to it: its
+		// Convex backend, its server setup and its components.
 		alias: {
-			// The UI of the demo app. It isn't part of the published package.
-			$demo: 'src/demo'
+			$convex: 'src/convex',
+			$demo: 'src/demo',
+			$server: 'src/server'
 		}
 	}
 };

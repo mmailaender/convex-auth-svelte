@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import Chat from '$demo/Chat/Chat.svelte';
 	import ChatIntro from '$demo/Chat/ChatIntro.svelte';
 	import { useQuery } from 'convex-svelte';

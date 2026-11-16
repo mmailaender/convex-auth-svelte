@@ -5,7 +5,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { useAuth, useQuery } from 'convex-svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import { METHOD_LABELS } from '$demo/auth/config.js';
 	import SignIn from '$demo/auth/ui/SignIn.svelte';
 	import AuthPage from '$demo/ui/AuthPage.svelte';

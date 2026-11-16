@@ -9,7 +9,7 @@
 	import { useSignInWithApple } from '$lib/methods/apple';
 	import { useSignInWithGithub } from '$lib/methods/github';
 	import { useSignInWithGoogle } from '$lib/methods/google';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import Spinner from '$demo/primitives/ui/Spinner.svelte';
 	import { AUTH_CONFIG } from '../config.js';
 	import { authErrorMessage } from '../errors.js';

@@ -1,5 +1,5 @@
 import type { FunctionReturnType } from 'convex/server';
-import type { api } from '$lib/convex/_generated/api';
+import type { api } from '$convex/_generated/api';
 
 /** The signed-in user, as `api.users.viewer` returns it. */
 export type Viewer = NonNullable<FunctionReturnType<typeof api.users.viewer>>;

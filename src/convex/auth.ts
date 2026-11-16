@@ -28,7 +28,7 @@ const passkeyOrigins = origins.filter((origin) => {
 });
 
 // The core owns sessions and JWT minting. The SvelteKit server proxies the
-// sign-in functions below (see src/lib/server/serverAuth.ts), so the refresh
+// sign-in functions below (see src/server/serverAuth.server.ts), so the refresh
 // token ends up in an httpOnly cookie.
 const auth = setupConvexAuth({ component: components.auth });
 export const { signOut, refreshSession, isAuthenticated } = auth;

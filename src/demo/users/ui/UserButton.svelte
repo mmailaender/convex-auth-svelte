@@ -6,7 +6,7 @@
 	import { page } from '$app/state';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 	import { useAuth, useQuery } from 'convex-svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import * as Avatar from '$demo/primitives/ui/avatar/index.js';
 	import * as Popover from '$demo/primitives/ui/popover/index.js';
 	import WaitsForHydration from '$demo/primitives/ui/WaitsForHydration.svelte';

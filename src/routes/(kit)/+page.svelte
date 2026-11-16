@@ -9,7 +9,7 @@
 	import ServerIcon from '@lucide/svelte/icons/server';
 	import UserCogIcon from '@lucide/svelte/icons/user-cog';
 	import { useAuth, useQuery } from 'convex-svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import * as Avatar from '$demo/primitives/ui/avatar/index.js';
 	import { METHOD_LABELS } from '$demo/auth/config.js';
 	import { setProfileDialog } from '$demo/users/ui/profileDialog.js';
@@ -72,7 +72,7 @@
 			title: 'Dev inbox',
 			text: 'With DEV_INBOX=true and no Resend API key, the emails of Convex Auth land here, links included.',
 			href: '/dev/inbox',
-			code: 'src/lib/convex/emails.ts'
+			code: 'src/convex/emails.ts'
 		}
 	];
 </script>

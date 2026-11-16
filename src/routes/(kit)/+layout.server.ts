@@ -1,4 +1,4 @@
-import { convexAuthSvelteKitAccessToken } from '$lib/server/convexAuth';
+import { convexAuthSvelteKitAccessToken } from '$server/convexAuth.server';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = (event) => {

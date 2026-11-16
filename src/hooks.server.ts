@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { convexAuthSvelteKitHandle } from '$lib/server/convexAuth';
+import { convexAuthSvelteKitHandle } from '$server/convexAuth.server';
 import { safeRedirect } from '$demo/auth/redirect.js';
 
 const isAuthPage = (path: string) => path === '/signin' || path === '/signup';

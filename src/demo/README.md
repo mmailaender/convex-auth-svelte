@@ -26,7 +26,7 @@ Each account has exactly one sign-in method: Convex Auth v2 doesn't link methods
 
 ## Run it
 
-The backend in `src/lib/convex` sets up every method, so the deployment needs the credentials of each OAuth provider. For local work any value starts the backend, and only that provider's button fails:
+The backend in `src/convex` sets up every method, so the deployment needs the credentials of each OAuth provider. For local work any value starts the backend, and only that provider's button fails:
 
 ```bash
 npx convex env set AUTH_GITHUB_CLIENT_ID <id>

@@ -8,7 +8,7 @@
 	import { useHydrated } from '$demo/primitives/hooks/hydrated.svelte.js';
 	import FingerprintIcon from '@lucide/svelte/icons/fingerprint';
 	import { useSignInWithUsernamePasskey } from '$lib/methods/username-passkey.svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import Alert from '$demo/primitives/ui/Alert.svelte';
 	import Spinner from '$demo/primitives/ui/Spinner.svelte';
 	import { authErrorMessage, type AuthUserError } from '../errors.js';

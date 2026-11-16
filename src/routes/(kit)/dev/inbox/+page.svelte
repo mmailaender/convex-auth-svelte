@@ -6,7 +6,7 @@
 	import { page } from '$app/state';
 	import InboxIcon from '@lucide/svelte/icons/inbox';
 	import { useQuery } from 'convex-svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 
 	const LANDING_PAGES = ['/validate-email', '/confirm-email-change', '/reset-password'];
 

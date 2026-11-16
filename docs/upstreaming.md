@@ -31,6 +31,36 @@ The core already is a shared layer: `AuthClient` (`@convex-dev/auth/browser`) an
 4. Framework-agnostic method clients, e.g. `createUsernamePasswordFlows({ authClient, signInApi })` returning plain async functions and a subscribable `pending`. The React hooks and the Svelte helpers would then be thin wrappers. This is the meaningful shared layer for email + password and passkeys.
 5. The passkey ceremonies, flows and wire types (`methods/username-passkey/client.ts`, `ceremonies.ts`, `flows.ts`, `management/flows.ts`, and the passkey component's `validation.ts` types) from a non-React entry, e.g. `@convex-dev/auth/methods/username-passkey/client`. `internal/passkey` would then shrink to the runes rewrite of the autofill loop, from about 1,100 lines to about 350.
 
+## Target architecture
+
+Today `@convex-dev/auth` has one shared layer, the session (`AuthClient` and the SSR handlers). Everything a sign-in method does in the browser lives in its React hooks, so this package carries a copy of it:
+
+```text
+@convex-dev/auth/browser, /ssr     session: tokens, refresh, cookies    shared today
+        │                                    │
+@convex-dev/auth/react             @mmailaender/convex-auth-svelte
+  provider + method hooks            binding + method helpers
+  + the method flows                 + copies of the method flows
+```
+
+With the exports above, the method flows join the shared layer, and each framework only binds them:
+
+```text
+@convex-dev/auth/browser, /ssr     session                              exists
+@convex-dev/auth/methods/<m>       method flows: plain async functions,  new
+                                   a subscribable `pending`
+        │                                    │
+react bindings                      svelte bindings
+  provider + one hook per flow       setup function + one helper per flow
+```
+
+The Svelte bindings could then live in either place:
+
+1. **Here, as a community package** on top of the shared layer. It needs only the exports, and any other framework (Vue, Solid, …) can follow the same way.
+2. **In `@convex-dev/auth`**, as `@convex-dev/auth/svelte` and `methods/<m>/svelte`, next to the React bindings, at the paths in the module map. That also needs the build change below.
+
+Both start with the same upstream change: exporting the method flows without React. This package would then shrink from about 2,100 lines of code to the binding (about 500) plus thin helpers.
+
 ## Build
 
 Svelte runes only compile in `.svelte` and `.svelte.ts` files, so upstream's `tsc` build would need `svelte-package` (or shipping the `.svelte.ts` sources under a `svelte` export condition) for the Svelte entry points.

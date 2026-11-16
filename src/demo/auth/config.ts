@@ -1,9 +1,9 @@
 /**
  * Which sign-in methods the demo offers, and how it brands its sign-in card.
  *
- * Each method needs its functions in `src/lib/convex/auth.ts`, and the
+ * Each method needs its functions in `src/convex/auth.ts`, and the
  * functions that create a session in the `signIn` list of
- * `src/lib/server/serverAuth.ts`. Turning a method off here only hides it.
+ * `src/server/serverAuth.server.ts`. Turning a method off here only hides it.
  */
 export const AUTH_CONFIG = {
 	brandName: 'Convex Auth',

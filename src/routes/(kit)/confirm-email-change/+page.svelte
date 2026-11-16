@@ -2,7 +2,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { useCompleteChangeEmail } from '$lib/methods/email-password.svelte';
-	import { api } from '$lib/convex/_generated/api';
+	import { api } from '$convex/_generated/api';
 	import { authErrorMessage } from '$demo/auth/errors.js';
 	import AuthPage from '$demo/ui/AuthPage.svelte';
 	import LinkStatus from '$demo/ui/LinkStatus.svelte';
